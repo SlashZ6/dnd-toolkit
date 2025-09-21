@@ -1,0 +1,159 @@
+import { useState, useEffect } from 'react';
+import { Character, createEmptyCharacter } from '../types';
+
+// --- IndexedDB Logic ---
+const DB_NAME = 'dnd-players-toolkit';
+const DB_VERSION = 1;
+const STORE_NAME = 'characters';
+
+let db: IDBDatabase;
+
+const initDB = (): Promise<boolean> => {
+  return new Promise((resolve, reject) => {
+    if (db) {
+      return resolve(true);
+    }
+
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = (event) => {
+      const dbInstance = (event.target as IDBOpenDBRequest).result;
+      if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
+        dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+
+    request.onsuccess = (event) => {
+      db = (event.target as IDBOpenDBRequest).result;
+      resolve(true);
+    };
+
+    request.onerror = (event) => {
+      console.error('IndexedDB error:', (event.target as IDBOpenDBRequest).error);
+      reject(false);
+    };
+  });
+};
+
+const getStore = (mode: IDBTransactionMode) => {
+  const transaction = db.transaction(STORE_NAME, mode);
+  transaction.onerror = (event) => {
+    console.error(`Transaction error: ${(event.target as IDBTransaction).error}`);
+  };
+  return transaction.objectStore(STORE_NAME);
+};
+
+const getAllCharactersDB = (): Promise<Character[]> => {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject('DB not initialized');
+    const request = getStore('readonly').getAll();
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+    request.onerror = () => {
+      console.error('Error getting all characters:', request.error);
+      reject(request.error);
+    };
+  });
+};
+
+const addCharacterDB = (character: Character): Promise<Character> => {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject('DB not initialized');
+    const request = getStore('readwrite').add(character);
+    request.onsuccess = () => {
+      resolve(character);
+    };
+    request.onerror = () => {
+      console.error('Error adding character:', request.error);
+      reject(request.error);
+    };
+  });
+};
+
+const updateCharacterDB = (character: Character): Promise<Character> => {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject('DB not initialized');
+    const request = getStore('readwrite').put(character);
+    request.onsuccess = () => {
+      resolve(character);
+    };
+    request.onerror = () => {
+      console.error('Error updating character:', request.error);
+      reject(request.error);
+    };
+  });
+};
+
+const deleteCharacterDB = (id: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    if (!db) return reject('DB not initialized');
+    const request = getStore('readwrite').delete(id);
+    request.onsuccess = () => {
+      resolve(id);
+    };
+    request.onerror = () => {
+      console.error('Error deleting character:', request.error);
+      reject(request.error);
+    };
+  });
+};
+// --- End IndexedDB Logic ---
+
+export const useCharacters = () => {
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await initDB();
+        const storedCharacters = await getAllCharactersDB();
+        // Ensure all characters have the latest data structure by merging with a default character object.
+        // This prevents errors if a user has characters stored from an older version of the app.
+        const migratedCharacters = storedCharacters.map(char => ({
+          ...createEmptyCharacter(char.id), // provides default values for all fields
+          ...char, // overrides defaults with stored values
+        }));
+        setCharacters(migratedCharacters);
+      } catch (error) {
+        console.error('Failed to load characters from DB', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const addCharacter = async (character: Character) => {
+    try {
+      await addCharacterDB(character);
+      setCharacters((prev) => [...prev, character]);
+    } catch (error) {
+      console.error('Failed to add character', error);
+    }
+  };
+
+  const updateCharacter = async (updatedCharacter: Character) => {
+    try {
+      await updateCharacterDB(updatedCharacter);
+      setCharacters((prev) =>
+        prev.map((c) => (c.id === updatedCharacter.id ? updatedCharacter : c))
+      );
+    } catch (error) {
+      console.error('Failed to update character', error);
+    }
+  };
+
+  const deleteCharacter = async (characterId: string) => {
+    try {
+      await deleteCharacterDB(characterId);
+      setCharacters((prev) => prev.filter((c) => c.id !== characterId));
+    } catch (error) {
+      console.error('Failed to delete character', error);
+    }
+  };
+
+  return { characters, addCharacter, updateCharacter, deleteCharacter, isLoading };
+};

@@ -1,0 +1,6 @@
+{
+  "name": "D&D Toolkit",
+  "description": "An offline-first toolkit for Dungeons & Dragons. Create, manage, and track with ease. All data is stored locally in your browser using IndexedDB.",
+  "requestFramePermissions": [],
+  "prompt": ""
+}
