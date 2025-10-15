@@ -1,13 +1,11 @@
-
-
 import { useState, useEffect } from 'react';
 import { Character, createEmptyCharacter } from '../types';
 
 // --- IndexedDB Logic for DM ---
 const DB_NAME = 'dnd-dm-toolkit'; // Separate DB for the DM
-const DB_VERSION = 6;
+const DB_VERSION = 8; // Bump version for schema change
 const STORE_NAME = 'characters';
-const STORE_NAMES = ['characters', 'dm_notes', 'npcs', 'bestiary', 'campaign_notes', 'timeline_events'];
+const STORE_NAMES = ['characters', 'dm_notes', 'npcs', 'bestiary', 'campaign_notes', 'timeline_events', 'homebrew_races', 'homebrew_spells', 'homebrew_classes', 'homebrew_rules'];
 
 
 let db: IDBDatabase;
@@ -24,7 +22,14 @@ const initDB = (): Promise<boolean> => {
       const dbInstance = (event.target as IDBOpenDBRequest).result;
       STORE_NAMES.forEach(storeName => {
           if (!dbInstance.objectStoreNames.contains(storeName)) {
-              const keyPath = storeName === 'dm_notes' ? 'characterId' : 'id';
+              let keyPath;
+              if (storeName === 'dm_notes') {
+                  keyPath = 'characterId';
+              } else if (storeName.startsWith('homebrew_')) {
+                  keyPath = 'id'; // All homebrew stores use 'id'
+              } else {
+                  keyPath = 'id'; // Default for characters, npcs, etc.
+              }
               dbInstance.createObjectStore(storeName, { keyPath });
           }
       });
@@ -42,18 +47,19 @@ const initDB = (): Promise<boolean> => {
   });
 };
 
-const getStore = (mode: IDBTransactionMode) => {
-  const transaction = db.transaction(STORE_NAME, mode);
+const getStore = (store: string, mode: IDBTransactionMode) => {
+  const transaction = db.transaction(store, mode);
   transaction.onerror = (event) => {
-    console.error(`Transaction error: ${(event.target as IDBTransaction).error}`);
+    console.error(`Transaction error on ${store}: ${(event.target as IDBTransaction).error}`);
   };
-  return transaction.objectStore(STORE_NAME);
+  return transaction.objectStore(store);
 };
+
 
 const getAllCharactersDB = (): Promise<Character[]> => {
   return new Promise((resolve, reject) => {
     if (!db) return reject('DB not initialized');
-    const request = getStore('readonly').getAll();
+    const request = getStore(STORE_NAME, 'readonly').getAll();
     request.onsuccess = () => {
       resolve(request.result);
     };
@@ -67,7 +73,7 @@ const getAllCharactersDB = (): Promise<Character[]> => {
 const addCharacterDB = (character: Character): Promise<Character> => {
   return new Promise((resolve, reject) => {
     if (!db) return reject('DB not initialized');
-    const request = getStore('readwrite').add(character);
+    const request = getStore(STORE_NAME, 'readwrite').add(character);
     request.onsuccess = () => {
       resolve(character);
     };
@@ -81,7 +87,7 @@ const addCharacterDB = (character: Character): Promise<Character> => {
 const updateCharacterDB = (character: Character): Promise<Character> => {
   return new Promise((resolve, reject) => {
     if (!db) return reject('DB not initialized');
-    const request = getStore('readwrite').put(character);
+    const request = getStore(STORE_NAME, 'readwrite').put(character);
     request.onsuccess = () => {
       resolve(character);
     };
@@ -95,7 +101,7 @@ const updateCharacterDB = (character: Character): Promise<Character> => {
 const deleteCharacterDB = (id: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     if (!db) return reject('DB not initialized');
-    const request = getStore('readwrite').delete(id);
+    const request = getStore(STORE_NAME, 'readwrite').delete(id);
     request.onsuccess = () => {
       resolve(id);
     };

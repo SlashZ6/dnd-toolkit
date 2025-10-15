@@ -1,12 +1,10 @@
-
-
 import { useState, useEffect, useCallback } from 'react';
 import { DMNotes, createEmptyDMNotes } from '../types';
 
 const DB_NAME = 'dnd-dm-toolkit';
-const DB_VERSION = 6; 
+const DB_VERSION = 8; // Bump version for schema change
 const NOTES_STORE_NAME = 'dm_notes';
-const STORE_NAMES = ['characters', 'dm_notes', 'npcs', 'bestiary', 'campaign_notes', 'timeline_events'];
+const STORE_NAMES = ['characters', 'dm_notes', 'npcs', 'bestiary', 'campaign_notes', 'timeline_events', 'homebrew_races', 'homebrew_spells', 'homebrew_classes', 'homebrew_rules'];
 
 
 let db: IDBDatabase;
@@ -23,7 +21,14 @@ const initDB = (): Promise<boolean> => {
       const dbInstance = (event.target as IDBOpenDBRequest).result;
       STORE_NAMES.forEach(storeName => {
           if (!dbInstance.objectStoreNames.contains(storeName)) {
-              const keyPath = storeName === 'dm_notes' ? 'characterId' : 'id';
+              let keyPath;
+              if (storeName === 'dm_notes') {
+                  keyPath = 'characterId';
+              } else if (storeName.startsWith('homebrew_')) {
+                  keyPath = 'id';
+              } else {
+                  keyPath = 'id';
+              }
               dbInstance.createObjectStore(storeName, { keyPath });
           }
       });

@@ -292,12 +292,67 @@ export const DND_CLASS_DATA: { [key: string]: ClassData } = {
             { level: 11, name: "Robust Physiology", description: "You can use your reaction to expend a Hit Die and regain hit points equal to the roll + your Constitution modifier." },
             { level: 15, name: "Exalted Mutation", description: "Your mutagen effects are enhanced, and you can create an additional mutagen. The side effects of your mutagens are also reduced." }
           ]},
-          "Order of the Profane Soul": { name: "Order of the Profane Soul", features: [
-            { level: 3, name: "Otherworldly Patron", description: "You choose a patron (Archfey, Fiend, Great Old One, Celestial, etc.) and gain access to its associated spells." },
-            { level: 7, name: "Mystic Frenzy", description: "When you use your action to cast a cantrip, you can make one weapon attack as a bonus action." },
-            { level: 11, name: "Diabolic Channel", description: "You can imbue your weapon with a spell that has a casting time of 1 action. The spell must be from your pact magic feature. The next time you hit a creature with the weapon, the spell is cast on them." },
-            { level: 15, name: "Blood Curse of the Souleater", description: "You gain a Blood Curse that allows you to regain an expended warlock spell slot when a cursed creature dies." }
-          ]}
+          "Order of the Profane Soul": {
+            name: "Order of the Profane Soul",
+            features: [
+              { 
+                level: 3, 
+                name: "Otherworldly Patron", 
+                description: "You choose a patron (Archfey, Fiend, Great Old One, Celestial, Hexblade, Undying, etc.) and gain access to its associated spells." 
+              },
+              { 
+                level: 3, 
+                name: "Pact Magic", 
+                description: "You gain spellcasting similar to a warlock, using your Blood Hunter level for spell slots. You regain all expended slots on a short or long rest." 
+              },
+              { 
+                level: 3, 
+                name: "Rite Focus", 
+                description: "While your Crimson Rite is active, you can use your weapon as a spellcasting focus for your patron spells." 
+              },
+              { 
+                level: 7, 
+                name: "Mystic Frenzy", 
+                description: "When you use your action to cast a cantrip, you can make one weapon attack as a bonus action." 
+              },
+              { 
+                level: 7, 
+                name: "Revealed Arcana", 
+                description: "You can cast a patron-granted spell using any pact magic slot. Once you cast it this way, you can't do so again until you finish a long rest." 
+              },
+              { 
+                level: 11, 
+                name: "Diabolic Channel", 
+                description: "You can imbue your weapon with a spell that has a casting time of 1 action from your pact magic. The next time you hit a creature with the weapon, the spell is cast on them." 
+              },
+              { 
+                level: 11, 
+                name: "Brand of the Sapping Scar", 
+                description: "A creature affected by your Brand of Castigation has disadvantage on saving throws against your patron spells." 
+              },
+              { 
+                level: 15, 
+                name: "Unsealed Arcana", 
+                description: "You can cast an additional patron-granted spell without expending a spell slot. Once used, you can't do so again until you finish a long rest." 
+              },
+              { 
+                level: 15, 
+                name: "Blood Curse of the Souleater", 
+                description: "You gain a Blood Curse that lets you regain an expended pact magic spell slot when a cursed creature dies." 
+              }
+            ],
+            spellcasting: {
+                ability: 'int',
+                cantripsKnown: [0, 0, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                spellsKnown: [0, 0, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 11],
+                spellSlots: [
+                    [0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0], [1,0,0,0,0,0,0,0,0], [1,0,0,0,0,0,0,0,0], [1,0,0,0,0,0,0,0,0],
+                    [2,0,0,0,0,0,0,0,0], [0,2,0,0,0,0,0,0,0], [0,2,0,0,0,0,0,0,0], [0,2,0,0,0,0,0,0,0], [0,2,0,0,0,0,0,0,0],
+                    [0,2,0,0,0,0,0,0,0], [0,2,0,0,0,0,0,0,0], [0,0,2,0,0,0,0,0,0], [0,0,2,0,0,0,0,0,0], [0,0,2,0,0,0,0,0,0],
+                    [0,0,2,0,0,0,0,0,0], [0,0,2,0,0,0,0,0,0], [0,0,2,0,0,0,0,0,0], [0,0,0,2,0,0,0,0,0], [0,0,0,2,0,0,0,0,0]
+                ]
+            }
+          }
       }
   },
   "Cleric": {
@@ -917,6 +972,7 @@ export const DND_CLASS_DATA: { [key: string]: ClassData } = {
             cantripsKnown: [0,0,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4],
             spellsKnown:   [0,0,3,4,4,4,5,6,6,7,8,8,9,10,10,11,11,11,12,13],
             spellSlots: [
+                // 1, 2, 3, 4
                 [0,0,0,0],[0,0,0,0],[2,0,0,0],[3,0,0,0],[3,0,0,0],[3,0,0,0],[4,2,0,0],[4,2,0,0],[4,2,0,0],[4,3,0,0],
                 [4,3,0,0],[4,3,0,0],[4,3,2,0],[4,3,2,0],[4,3,2,0],[4,3,3,0],[4,3,3,0],[4,3,3,0],[4,3,3,1],[4,3,3,1]
             ]

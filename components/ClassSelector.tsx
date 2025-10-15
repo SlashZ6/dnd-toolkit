@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react';
 import type { Class } from '../types';
 import { DND_CLASSES } from '../constants';
 // import { getClassInfo } from '../services/geminiService';
-// Fix: Use a named import for Card as it does not have a default export.
 import { Card } from './ui/Card';
 import Button from './ui/Button';
 

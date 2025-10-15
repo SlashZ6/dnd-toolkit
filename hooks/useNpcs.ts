@@ -1,12 +1,11 @@
-
-
 import { useState, useEffect } from 'react';
 import { NPC, createEmptyNPC } from '../types';
 
 const DB_NAME = 'dnd-dm-toolkit';
-const DB_VERSION = 6;
+const DB_VERSION = 8; // Bump version for schema change
 const NPC_STORE_NAME = 'npcs';
-const STORE_NAMES = ['characters', 'dm_notes', 'npcs', 'bestiary', 'campaign_notes', 'timeline_events'];
+const STORE_NAMES = ['characters', 'dm_notes', 'npcs', 'bestiary', 'campaign_notes', 'timeline_events', 'homebrew_races', 'homebrew_spells', 'homebrew_classes', 'homebrew_rules'];
+
 
 let db: IDBDatabase;
 

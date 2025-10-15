@@ -1,8 +1,5 @@
-
-
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Character, createEmptyCharacter, Feature, InventoryItem, Spell } from '../types';
+import { Character, createEmptyCharacter, Feature, InventoryItem, Spell, HomebrewRace, HomebrewSpell, Companion, CompanionAction, createEmptyCompanion, HomebrewOfficialSubclass } from '../types';
 import Button from './ui/Button';
 import { DND_CLASSES, DND_SKILLS } from '../constants';
 import { DND_CLASS_DATA, getFeaturesForClassLevel } from '../data/dndData';
@@ -12,6 +9,10 @@ import { DND_RACES_DATA } from '../data/racesData';
 import { D20Icon } from './icons/D20Icon';
 import { WEAPONS, ARMOR, ADVENTURING_GEAR } from '../data/equipmentData';
 import { MAGIC_ITEMS } from '../data/magicItemsData';
+import { useHomebrewRaces } from '../hooks/useHomebrewRaces';
+import { useHomebrewSpells } from '../hooks/useHomebrewSpells';
+import { useHomebrewOfficialSubclasses } from '../hooks/useHomebrewOfficialSubclasses';
+import { LockIcon } from './icons/LockIcon';
 
 interface CharacterFormProps {
   character?: Character;
@@ -19,7 +20,7 @@ interface CharacterFormProps {
   onCancel: () => void;
 }
 
-type Tab = 'identity' | 'stats' | 'features' | 'inventory' | 'spells' | 'appearance';
+type Tab = 'identity' | 'stats' | 'features' | 'inventory' | 'spells' | 'appearance' | 'companions';
 
 const Section: React.FC<{ title: string; children: React.ReactNode, className?: string }> = ({ title, children, className }) => (
     <div className={`bg-[var(--bg-primary)]/50 p-6 rounded-lg border border-[var(--border-primary)] ${className}`}>
@@ -67,12 +68,37 @@ const getModifier = (score: number) => {
   return mod >= 0 ? `+${mod}` : String(mod);
 };
 
-const RaceInfoDisplay: React.FC<{ raceName: string }> = ({ raceName }) => {
+const RaceInfoDisplay: React.FC<{ raceName: string, homebrewRaces: HomebrewRace[] }> = ({ raceName, homebrewRaces }) => {
     const raceData = DND_RACES_DATA[raceName];
+    const homebrewRaceData = homebrewRaces.find(r => r.name === raceName);
 
+    if (homebrewRaceData) {
+        return (
+            <div className="mt-4 p-4 bg-[var(--bg-primary)]/50 rounded-lg border border-[var(--border-primary)] space-y-3 animate-fade-in text-[var(--text-secondary)]">
+                <div className="text-sm border-t border-[var(--border-primary)] pt-3 space-y-1">
+                    {homebrewRaceData.asi_desc && <p><strong className="font-semibold text-[var(--text-primary)]">Ability Scores:</strong> {homebrewRaceData.asi_desc}</p>}
+                    <p><strong className="font-semibold text-[var(--text-primary)]">Size:</strong> {homebrewRaceData.size}</p>
+                    <p><strong className="font-semibold text-[var(--text-primary)]">Speed:</strong> {homebrewRaceData.speed} ft.</p>
+                    {homebrewRaceData.languages && <p><strong className="font-semibold text-[var(--text-primary)]">Languages:</strong> {homebrewRaceData.languages}</p>}
+                </div>
+                {homebrewRaceData.traits && homebrewRaceData.traits.length > 0 && (
+                    <div className="border-t border-[var(--border-primary)] pt-3">
+                        <h4 className="font-semibold text-[var(--text-primary)] mb-2">Racial Traits</h4>
+                        <ul className="space-y-2 list-disc list-inside text-sm">
+                            {homebrewRaceData.traits.map(trait => (
+                                <li key={trait.name}>
+                                    <strong className="text-[var(--accent-primary)]">{trait.name}:</strong> <span className="text-[var(--text-muted)]">{trait.description}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+        );
+    }
+    
     if (!raceData) return null;
 
-    // New, rich data format
     if (raceData.traits) {
         const { description, size, speed, traits, languages, asi_desc, bonuses } = raceData;
 
@@ -105,7 +131,6 @@ const RaceInfoDisplay: React.FC<{ raceName: string }> = ({ raceName }) => {
         );
     }
     
-    // Fallback for old data format (where 'description' was the ASI hint)
     if (raceData.description) {
         return <div className="mt-2 text-xs text-[var(--text-muted)]">{raceData.description}</div>
     }
@@ -115,15 +140,38 @@ const RaceInfoDisplay: React.FC<{ raceName: string }> = ({ raceName }) => {
 
 
 const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCancel }) => {
-  const [formData, setFormData] = useState<Character>(() => character || createEmptyCharacter(String(Date.now() + Math.random())));
+  const [formData, setFormData] = useState<Character>(() => {
+    const initialCharacter = character || createEmptyCharacter(String(Date.now() + Math.random()));
+    if (!initialCharacter.companions) {
+      initialCharacter.companions = [];
+    }
+    return initialCharacter;
+  });
   const [activeTab, setActiveTab] = useState<Tab>('identity');
   const [rolledScores, setRolledScores] = useState<number[]>([]);
   const [hasRolled, setHasRolled] = useState(!!character);
   const prevRaceRef = useRef<string | undefined>(undefined);
   
-  const subclassOptions = formData.characterClass && DND_CLASS_DATA[formData.characterClass] && formData.level >= DND_CLASS_DATA[formData.characterClass].subclassLevel
+  const { races: homebrewRaces } = useHomebrewRaces();
+  const { spells: homebrewSpells } = useHomebrewSpells();
+  const { subclasses: homebrewSubclasses } = useHomebrewOfficialSubclasses();
+
+  const allRaces = useMemo(() => {
+    const official = Object.keys(DND_RACES_DATA).sort();
+    const homebrew = homebrewRaces.sort((a, b) => a.name.localeCompare(b.name));
+    return { official, homebrew };
+  }, [homebrewRaces]);
+  
+  const officialSubclassOptions = formData.characterClass && DND_CLASS_DATA[formData.characterClass] && formData.level >= DND_CLASS_DATA[formData.characterClass].subclassLevel
     ? Object.values(DND_CLASS_DATA[formData.characterClass].subclasses)
     : [];
+
+  const relevantHomebrewSubclasses = useMemo(() => {
+    if (!formData.characterClass || !homebrewSubclasses) return [];
+    const classData = DND_CLASS_DATA[formData.characterClass];
+    if (!classData || formData.level < classData.subclassLevel) return [];
+    return homebrewSubclasses.filter(sub => sub.baseClassName === formData.characterClass);
+  }, [formData.characterClass, formData.level, homebrewSubclasses]);
   
   useEffect(() => {
     const prevRace = prevRaceRef.current;
@@ -133,10 +181,9 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
         return;
     }
 
-    const prevRaceData = prevRace ? DND_RACES_DATA[prevRace] : null;
-    const newRaceData = newRace ? DND_RACES_DATA[newRace] : null;
+    const prevRaceData = prevRace ? (DND_RACES_DATA[prevRace] || homebrewRaces.find(r => r.name === prevRace)) : null;
+    const newRaceData = newRace ? (DND_RACES_DATA[newRace] || homebrewRaces.find(r => r.name === newRace)) : null;
     
-    // Don't apply bonuses if user is editing a character and hasn't changed the race yet on initial load
     if (character && prevRace === undefined && newRace === character.race) {
         prevRaceRef.current = newRace;
         return;
@@ -145,33 +192,29 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
     setFormData(currentData => {
         const newScores = { ...currentData.abilityScores };
 
-        // Subtract old bonuses
-        if (prevRaceData?.bonuses) {
+        if (prevRaceData && 'bonuses' in prevRaceData && prevRaceData.bonuses) {
             for (const key in prevRaceData.bonuses) {
                 const ability = key as keyof Character['abilityScores'];
-                newScores[ability] -= prevRaceData.bonuses[ability] || 0;
+                newScores[ability] -= (prevRaceData.bonuses as any)[ability] || 0;
             }
         }
         
-        // Add new bonuses
-        if (newRaceData?.bonuses) {
+        if (newRaceData && 'bonuses' in newRaceData && newRaceData.bonuses) {
              for (const key in newRaceData.bonuses) {
                 const ability = key as keyof Character['abilityScores'];
-                newScores[ability] += newRaceData.bonuses[ability] || 0;
+                newScores[ability] += (newRaceData.bonuses as any)[ability] || 0;
             }
         }
 
-        // Remove old racial traits
         const featuresWithoutRaceTraits = currentData.features.filter(f => f.source !== 'race');
         
-        // Add new racial traits
         let newRaceTraits: Feature[] = [];
         if (newRaceData?.traits) {
             newRaceTraits = newRaceData.traits.map(trait => ({
                 id: `${newRace}-${trait.name}`.replace(/\s+/g, '-'),
                 name: trait.name,
                 description: trait.description,
-                source: 'race',
+                source: 'race' as const,
             }));
         }
         
@@ -181,11 +224,31 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
     });
 
     prevRaceRef.current = newRace;
-  }, [formData.race, character]);
+  }, [formData.race, character, homebrewRaces]);
 
 
   useEffect(() => {
     const classData = DND_CLASS_DATA[formData.characterClass];
+    const getModifierAsNumber = (score: number) => Math.floor((score - 10) / 2);
+    
+    const resolveUses = (maxUses: number | 'level' | 'cha' | 'wis' | 'int' | 'str' | 'dex' | 'con' | 'prof') => {
+        const proficiencyBonus = Math.floor((formData.level - 1) / 4) + 2;
+        let resolvedValue: number;
+        switch(maxUses) {
+            case 'level': resolvedValue = formData.level; break;
+            case 'prof': resolvedValue = proficiencyBonus; break;
+            case 'cha': resolvedValue = getModifierAsNumber(formData.abilityScores.cha); break;
+            case 'wis': resolvedValue = getModifierAsNumber(formData.abilityScores.wis); break;
+            case 'int': resolvedValue = getModifierAsNumber(formData.abilityScores.int); break;
+            case 'str': resolvedValue = getModifierAsNumber(formData.abilityScores.str); break;
+            case 'dex': resolvedValue = getModifierAsNumber(formData.abilityScores.dex); break;
+            case 'con': resolvedValue = getModifierAsNumber(formData.abilityScores.con); break;
+            default: resolvedValue = maxUses as number; break;
+        }
+        return Math.max(1, resolvedValue);
+    };
+
+
     if (classData && formData.level < classData.subclassLevel && formData.subclass !== '') {
         setFormData(prev => ({...prev, subclass: ''}));
     }
@@ -195,12 +258,33 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
 
     if (formData.characterClass && formData.level > 0) {
       autoFeatures = getFeaturesForClassLevel(formData.characterClass, formData.subclass, formData.level, formData.abilityScores);
+      
+      const homebrewSubclassData = homebrewSubclasses.find(hsc => hsc.name === formData.subclass && hsc.baseClassName === formData.characterClass);
+      if (homebrewSubclassData && classData && formData.level >= classData.subclassLevel) {
+          const homebrewFeatures = homebrewSubclassData.features
+              .filter(f => f.level <= formData.level)
+              .map(f => {
+                  let featureUses: Feature['uses'] | undefined = undefined;
+                  if (f.uses) {
+                      const max = resolveUses(f.uses.max);
+                      // On level up, we should preserve current uses if possible, but for simplicity here we reset.
+                      featureUses = { max, current: max };
+                  }
+                  return {
+                      id: `${homebrewSubclassData.id}-${f.name}-${f.level}`,
+                      name: f.name,
+                      description: f.description,
+                      source: 'automatic' as const,
+                      uses: featureUses,
+                      recharge: f.recharge
+                  };
+              });
+          autoFeatures.push(...homebrewFeatures);
+      }
     }
     
     const newFeatures = [...otherFeatures, ...autoFeatures];
       
-    // Auto-calculate HP, Passive Perception, and Spell Slots
-    const getModifierAsNumber = (score: number) => Math.floor((score - 10) / 2);
     const conMod = getModifierAsNumber(formData.abilityScores.con);
     const wisMod = getModifierAsNumber(formData.abilityScores.wis);
     const proficiencyBonus = Math.floor((formData.level - 1) / 4) + 2;
@@ -208,9 +292,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
     
     let maxHp = 0;
     if(hitDie > 0) {
-        // Level 1: max hit die + con mod
         maxHp = hitDie + conMod;
-        // Levels 2-20: add average roll + con mod
         if (formData.level > 1) {
             maxHp += (formData.level - 1) * (Math.floor(hitDie / 2) + 1 + conMod);
         }
@@ -220,14 +302,13 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
     const passivePerception = 10 + wisMod + (perceptionProficient ? proficiencyBonus : 0);
 
     let currentHp = formData.currentHp;
-    if (!character) { // If new character, set current HP to max
+    if (!character) {
       currentHp = maxHp;
-    } else if (maxHp !== formData.maxHp) { // If maxHP changed, adjust currentHP proportionally
+    } else if (maxHp !== formData.maxHp) {
       const ratio = formData.maxHp > 0 ? formData.currentHp / formData.maxHp : 1;
       currentHp = Math.round(maxHp * ratio);
     }
 
-    // Spell Slots
     let spellcastingData = classData?.spellcasting;
     if (classData && formData.subclass && classData.subclasses[formData.subclass]?.spellcasting) {
         spellcastingData = classData.subclasses[formData.subclass].spellcasting;
@@ -256,7 +337,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
       }
     }));
 
-  }, [formData.characterClass, formData.subclass, formData.level, formData.abilityScores, formData.skillProficiencies, character]);
+  }, [formData.characterClass, formData.subclass, formData.level, formData.abilityScores, formData.skillProficiencies, character, homebrewSubclasses]);
 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -266,7 +347,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
       setFormData(prev => ({ ...prev, subclass: '', spells: [] }));
     }
 
-    const isNumber = type === 'number' && name !== 'age'; // Keep age as a string
+    const isNumber = type === 'number' && name !== 'age';
     setFormData(prev => ({ ...prev, [name]: isNumber ? parseInt(value, 10) || 0 : value }));
   };
 
@@ -351,6 +432,38 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
     }
   };
 
+    const addCompanion = () => {
+        setFormData(prev => ({...prev, companions: [...(prev.companions || []), createEmptyCompanion(String(Date.now() + Math.random()))] }));
+    };
+    const removeCompanion = (id: string) => {
+        setFormData(prev => ({...prev, companions: prev.companions.filter(c => c.id !== id)}));
+    };
+    const handleCompanionChange = (index: number, field: keyof Omit<Companion, 'abilityScores' | 'actions'>, value: string | number) => {
+        const newCompanions = [...formData.companions];
+        (newCompanions[index] as any)[field] = value;
+        setFormData(prev => ({...prev, companions: newCompanions}));
+    };
+    const handleCompanionAbilityScoreChange = (compIndex: number, field: keyof Companion['abilityScores'], value: string) => {
+        const newCompanions = [...formData.companions];
+        newCompanions[compIndex].abilityScores[field] = parseInt(value, 10) || 0;
+        setFormData(prev => ({...prev, companions: newCompanions}));
+    };
+    const addCompanionAction = (compIndex: number) => {
+        const newCompanions = [...formData.companions];
+        newCompanions[compIndex].actions.push({ id: String(Date.now() + Math.random()), name: '', description: '' });
+        setFormData(prev => ({ ...prev, companions: newCompanions }));
+    };
+    const removeCompanionAction = (compIndex: number, actionId: string) => {
+        const newCompanions = [...formData.companions];
+        newCompanions[compIndex].actions = newCompanions[compIndex].actions.filter(a => a.id !== actionId);
+        setFormData(prev => ({ ...prev, companions: newCompanions }));
+    };
+    const handleCompanionActionChange = (compIndex: number, actionIndex: number, field: keyof CompanionAction, value: string) => {
+        const newCompanions = [...formData.companions];
+        newCompanions[compIndex].actions[actionIndex] = { ...newCompanions[compIndex].actions[actionIndex], [field]: value };
+        setFormData(prev => ({ ...prev, companions: newCompanions }));
+    };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave(formData);
@@ -395,6 +508,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
                 <TabButton tabId="features">Features</TabButton>
                 <TabButton tabId="spells">Spells</TabButton>
                 <TabButton tabId="inventory">Inventory</TabButton>
+                <TabButton tabId="companions">Companions</TabButton>
                 <TabButton tabId="appearance">Appearance & Notes</TabButton>
             </div>
         </div>
@@ -409,9 +523,18 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
                          <div className="lg:col-span-1">
                             <FormSelect label="Race" name="race" value={formData.race} onChange={handleChange} required>
                                 <option value="">Select a Race</option>
-                                {Object.keys(DND_RACES_DATA).sort().map(raceName => (
-                                    <option key={raceName} value={raceName}>{raceName}</option>
-                                ))}
+                                <optgroup label="Official Races">
+                                    {allRaces.official.map(raceName => (
+                                        <option key={raceName} value={raceName}>{raceName}</option>
+                                    ))}
+                                </optgroup>
+                                {allRaces.homebrew.length > 0 && (
+                                    <optgroup label="Homebrew Races">
+                                        {allRaces.homebrew.map(race => (
+                                            <option key={race.id} value={race.name}>{race.name}</option>
+                                        ))}
+                                    </optgroup>
+                                )}
                             </FormSelect>
                         </div>
                         <FormSelect label="Class" name="characterClass" value={formData.characterClass} onChange={handleChange} required>
@@ -419,14 +542,23 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
                             {DND_CLASSES.map(c => <option key={c} value={c}>{c}</option>)}
                         </FormSelect>
                         <FormInput label="Level" name="level" type="number" value={formData.level} onChange={handleChange} min="1" max="20" required/>
-                        <FormSelect label="Subclass" name="subclass" value={formData.subclass} onChange={handleChange} disabled={subclassOptions.length === 0}>
+                        <FormSelect label="Subclass" name="subclass" value={formData.subclass} onChange={handleChange} disabled={officialSubclassOptions.length === 0 && relevantHomebrewSubclasses.length === 0}>
                             <option value="">Select Subclass (Lvl {DND_CLASS_DATA[formData.characterClass]?.subclassLevel || 'N/A'})</option>
-                            {subclassOptions.map(sc => <option key={sc.name} value={sc.name}>{sc.name}</option>)}
+                            {officialSubclassOptions.length > 0 && (
+                                <optgroup label="Official Subclasses">
+                                    {officialSubclassOptions.map(sc => <option key={sc.name} value={sc.name}>{sc.name}</option>)}
+                                </optgroup>
+                            )}
+                            {relevantHomebrewSubclasses.length > 0 && (
+                                <optgroup label="Homebrew Subclasses">
+                                    {relevantHomebrewSubclasses.map(sc => <option key={sc.id} value={sc.name}>{sc.name}</option>)}
+                                </optgroup>
+                            )}
                         </FormSelect>
                         <FormInput label="Bloodline" name="bloodline" value={formData.bloodline} onChange={handleChange} placeholder="e.g., of Dragons" />
                         <FormInput label="Age" name="age" value={formData.age} onChange={handleChange} placeholder="e.g., 28" />
                     </div>
-                     {formData.race && <RaceInfoDisplay raceName={formData.race} />}
+                     {formData.race && <RaceInfoDisplay raceName={formData.race} homebrewRaces={homebrewRaces} />}
                 </Section>
             </div>}
 
@@ -509,17 +641,16 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
             </div>}
 
             {activeTab === 'spells' && <div className="animate-fade-in">
-                <Section title="Spellbook">
-                    <SpellSelector 
-                        onSelect={addSpell} 
-                        onRemove={removeSpell}
-                        knownSpells={formData.spells}
-                        characterClass={formData.characterClass}
-                        subclass={formData.subclass}
-                        characterLevel={formData.level}
-                        abilityScores={formData.abilityScores}
-                         />
-                </Section>
+                <SpellSelector 
+                    onSelect={addSpell} 
+                    onRemove={removeSpell}
+                    knownSpells={formData.spells}
+                    characterClass={formData.characterClass}
+                    subclass={formData.subclass}
+                    characterLevel={formData.level}
+                    abilityScores={formData.abilityScores}
+                    homebrewSpells={homebrewSpells}
+                        />
             </div>}
             
             {activeTab === 'inventory' && <div className="animate-fade-in">
@@ -534,12 +665,57 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
                              <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-[var(--bg-secondary)]/70 rounded-lg border border-[var(--border-primary)]">
                                 <input value={item.name} onChange={(e) => handleInventoryItemChange(index, 'name', e.target.value)} placeholder="Item Name" className="flex-grow bg-[var(--bg-primary)]/80 p-2 rounded-md border border-[var(--border-secondary)] focus:ring-[var(--accent-primary-hover)] focus:border-[var(--accent-primary-hover)]"/>
                                 <input type="number" value={item.quantity} onChange={(e) => handleInventoryItemChange(index, 'quantity', parseInt(e.target.value, 10) || 1)} placeholder="Qty" className="w-24 bg-[var(--bg-primary)]/80 p-2 rounded-md border border-[var(--border-secondary)] focus:ring-[var(--accent-primary-hover)] focus:border-[var(--accent-primary-hover)]"/>
-                                <input value={item.description} onChange={(e) => handleInventoryItemChange(index, 'description', e.target.value)} placeholder="Description/Notes" className="flex-grow bg-[var(--bg-primary)]/80 p-2 rounded-md border border-[var(--border-secondary)] focus:ring-[var(--accent-primary-hover)] focus:border-[var(--accent-primary-hover)]"/>
+                                <input value={item.description || ''} onChange={(e) => handleInventoryItemChange(index, 'description', e.target.value)} placeholder="Description/Notes" className="flex-grow bg-[var(--bg-primary)]/80 p-2 rounded-md border border-[var(--border-secondary)] focus:ring-[var(--accent-primary-hover)] focus:border-[var(--accent-primary-hover)]"/>
                                 <Button type="button" size="sm" onClick={() => removeInventoryItem(item.id)} variant="ghost" className="!p-2 aspect-square text-[var(--text-muted)] hover:text-red-500 hover:bg-red-900/30 self-center sm:self-auto"><TrashIcon className="h-5 w-5"/></Button>
                             </div>
                         ))}
                     </div>
                 </Section>
+            </div>}
+
+            {activeTab === 'companions' && <div className="animate-fade-in">
+                 <Section title="Companions & Familiars">
+                    <div className="space-y-6">
+                        {(formData.companions || []).map((companion, compIndex) => (
+                             <div key={companion.id} className="bg-[var(--bg-secondary)]/70 p-4 rounded-lg border border-[var(--border-primary)] space-y-4">
+                                 <div className="flex justify-between items-start">
+                                     <h4 className="text-lg font-medieval text-[var(--accent-secondary)]">{companion.name || 'New Companion'}</h4>
+                                     <Button type="button" onClick={() => removeCompanion(companion.id)} variant="destructive" size="sm" className="!p-2 aspect-square"><TrashIcon className="h-5 w-5"/></Button>
+                                 </div>
+                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                     <FormInput label="Name" value={companion.name} onChange={e => handleCompanionChange(compIndex, 'name', e.target.value)} />
+                                     <FormInput label="Type" value={companion.type} onChange={e => handleCompanionChange(compIndex, 'type', e.target.value)} placeholder="e.g. Beast, Familiar" />
+                                     <FormInput label="Speed" value={companion.speed} onChange={e => handleCompanionChange(compIndex, 'speed', e.target.value)} placeholder="e.g. 30 ft., fly 60 ft." />
+                                     <FormInput label="Current HP" type="number" value={companion.currentHp} onChange={e => handleCompanionChange(compIndex, 'currentHp', parseInt(e.target.value) || 0)} />
+                                     <FormInput label="Max HP" type="number" value={companion.maxHp} onChange={e => handleCompanionChange(compIndex, 'maxHp', parseInt(e.target.value) || 0)} />
+                                     <FormInput label="AC" type="number" value={companion.ac} onChange={e => handleCompanionChange(compIndex, 'ac', parseInt(e.target.value) || 0)} />
+                                 </div>
+                                 <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                                     {(Object.keys(companion.abilityScores) as Array<keyof Companion['abilityScores']>).map(key => (
+                                         <FormInput key={key} label={key.toUpperCase()} type="number" value={companion.abilityScores[key]} onChange={e => handleCompanionAbilityScoreChange(compIndex, key, e.target.value)} />
+                                     ))}
+                                 </div>
+                                  <div>
+                                     <h5 className="font-bold text-[var(--text-secondary)] mb-2">Actions</h5>
+                                     <div className="space-y-2">
+                                         {companion.actions.map((action, actionIndex) => (
+                                             <div key={action.id} className="flex gap-2 items-end p-2 bg-[var(--bg-primary)]/50 rounded">
+                                                 <div className="flex-grow space-y-1">
+                                                     <input value={action.name} onChange={e => handleCompanionActionChange(compIndex, actionIndex, 'name', e.target.value)} placeholder="Action Name" className="w-full bg-[var(--bg-secondary)] p-1 rounded border border-[var(--border-secondary)]"/>
+                                                     <textarea value={action.description} onChange={e => handleCompanionActionChange(compIndex, actionIndex, 'description', e.target.value)} placeholder="Description" rows={1} className="w-full bg-[var(--bg-secondary)] p-1 rounded text-sm border border-[var(--border-secondary)]"/>
+                                                 </div>
+                                                 <Button type="button" onClick={() => removeCompanionAction(compIndex, action.id)} variant="ghost" size="sm" className="!p-1.5 aspect-square text-[var(--text-muted)] hover:text-red-500"><TrashIcon className="h-4 w-4"/></Button>
+                                             </div>
+                                         ))}
+                                     </div>
+                                     <Button type="button" onClick={() => addCompanionAction(compIndex)} size="sm" variant="ghost" className="mt-2">Add Action</Button>
+                                 </div>
+                                 <FormTextarea label="Notes" value={companion.notes} onChange={e => handleCompanionChange(compIndex, 'notes', e.target.value)} rows={3}/>
+                             </div>
+                        ))}
+                    </div>
+                    <Button type="button" onClick={addCompanion} className="mt-6">Add Companion</Button>
+                 </Section>
             </div>}
 
             {activeTab === 'appearance' && <div className="animate-fade-in">
@@ -582,6 +758,213 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
   )
 };
 
+interface SpellSelectorProps {
+    onSelect: (spellName: string) => void;
+    onRemove: (spellName: string) => void;
+    knownSpells: string[];
+    characterClass: string;
+    subclass: string;
+    characterLevel: number;
+    abilityScores: Character['abilityScores'];
+    homebrewSpells: HomebrewSpell[];
+}
+
+const SpellSelector: React.FC<SpellSelectorProps> = ({ onSelect, onRemove, knownSpells, characterClass, subclass, characterLevel, abilityScores, homebrewSpells }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [levelFilter, setLevelFilter] = useState<string>('All');
+
+    const allSpells: Spell[] = useMemo(() => [
+        ...Object.values(DND_SPELLS),
+        ...homebrewSpells.map(hs => ({...hs, source: 'Homebrew'} as Spell))
+    ].sort((a, b) => a.level - b.level || a.name.localeCompare(b.name)), [homebrewSpells]);
+    
+    const classData = DND_CLASS_DATA[characterClass];
+    const spellcastingData = useMemo(() => {
+        if (!classData) return null;
+        if (subclass && classData.subclasses[subclass]?.spellcasting) {
+            return classData.subclasses[subclass].spellcasting;
+        }
+        return classData.spellcasting;
+    }, [classData, subclass]);
+    
+    const maxSpellLevel = useMemo(() => {
+        if (!spellcastingData?.spellSlots) return 0;
+        const slotsForLevel = spellcastingData.spellSlots[characterLevel - 1] || [];
+        for (let i = slotsForLevel.length - 1; i >= 0; i--) {
+            if (slotsForLevel[i] > 0) {
+                return i + 1;
+            }
+        }
+        return 0; // No spell slots > level 0 for cantrips
+    }, [spellcastingData, characterLevel]);
+
+    const availableSpells = useMemo(() => {
+        if (!characterClass) return [];
+        
+        const isProfaneSoul = characterClass === 'Blood Hunter' && subclass === 'Order of the Profane Soul';
+
+        return allSpells.filter(spell => {
+            let classMatch = spell.class.includes(characterClass) || (subclass && spell.class.includes(subclass));
+            if (isProfaneSoul) classMatch = classMatch || spell.class.includes('Warlock');
+            if (!classMatch) return false;
+
+            const searchTermMatch = spell.name.toLowerCase().includes(searchTerm.toLowerCase());
+            if (!searchTermMatch) return false;
+
+            if (levelFilter === 'All') return true;
+            if (levelFilter === 'Cantrip') return spell.level === 0;
+            return spell.level === parseInt(levelFilter.replace('Lvl ', ''));
+        });
+    }, [allSpells, characterClass, subclass, searchTerm, levelFilter]);
+    
+    const knownSpellsList = useMemo(() => 
+        knownSpells.map(name => allSpells.find(s => s.name === name)).filter((s): s is Spell => s !== undefined),
+        [knownSpells, allSpells]
+    );
+
+    const knownCantripsCount = useMemo(() => knownSpellsList.filter(s => s.level === 0).length, [knownSpellsList]);
+    const knownLeveledSpellsCount = useMemo(() => knownSpellsList.filter(s => s.level > 0).length, [knownSpellsList]);
+
+    const { maxCantrips, maxSpellsPrepared, spellsKnownOrPreparedLabel } = useMemo(() => {
+        if (!spellcastingData) return { maxCantrips: 0, maxSpellsPrepared: 0, spellsKnownOrPreparedLabel: 'Spells' };
+
+        const cantrips = spellcastingData.cantripsKnown?.[characterLevel - 1] || 0;
+        
+        let maxSpells = 0;
+        let label = 'Spells Prepared';
+        const abilityMod = spellcastingData.ability ? Math.max(0, Math.floor((abilityScores[spellcastingData.ability] - 10) / 2)) : 0;
+        
+        if (spellcastingData.spellsKnown) {
+            maxSpells = spellcastingData.spellsKnown[characterLevel - 1] || 0;
+            label = 'Spells Known';
+        } 
+        else {
+            switch (characterClass) {
+                case 'Cleric': case 'Druid': case 'Wizard':
+                    maxSpells = Math.max(1, abilityMod + characterLevel);
+                    break;
+                case 'Paladin': case 'Artificer':
+                    maxSpells = Math.max(1, abilityMod + Math.floor(characterLevel / 2));
+                    break;
+                default:
+                    maxSpells = Math.max(1, abilityMod + characterLevel); // Fallback for homebrew
+            }
+        }
+
+        return { maxCantrips: cantrips, maxSpellsPrepared: maxSpells, spellsKnownOrPreparedLabel: label };
+    }, [spellcastingData, characterClass, characterLevel, abilityScores]);
+
+
+    const handleToggleSpell = (spell: Spell) => {
+        const isKnown = knownSpells.includes(spell.name);
+        if (isKnown) {
+            onRemove(spell.name);
+        } else {
+            if (spell.level === 0) {
+                if (knownCantripsCount < maxCantrips) onSelect(spell.name);
+            } else {
+                if (knownLeveledSpellsCount < maxSpellsPrepared) onSelect(spell.name);
+            }
+        }
+    };
+    
+    if (!spellcastingData) {
+        return (
+            <div className="bg-[var(--bg-primary)]/50 p-6 rounded-lg border border-[var(--border-primary)] text-center text-[var(--text-muted)]">
+                 This class does not have spellcasting abilities, or spellcasting is gained at a higher level.
+            </div>
+        );
+    }
+
+    const filterButtons = ['All', 'Cantrip', ...Array.from({ length: 9 }, (_, i) => `Lvl ${i + 1}`)];
+
+    return (
+        <div className="bg-[var(--bg-primary)]/50 p-6 rounded-lg border border-[var(--border-primary)]">
+            <h3 className="text-xl font-medieval text-[var(--accent-primary)] mb-4">Spellbook</h3>
+            
+            <div className="grid grid-cols-2 gap-4 mb-6 text-center bg-[var(--bg-secondary)] p-4 rounded-lg border border-[var(--border-secondary)]">
+                <div>
+                    <p className="text-sm text-[var(--text-secondary)]">Cantrips Known</p>
+                    <p className="text-3xl font-bold">
+                        <span className={knownCantripsCount > maxCantrips ? 'text-red-500' : 'text-[var(--accent-primary)]'}>{knownCantripsCount}</span>
+                        <span className="text-xl text-[var(--text-muted)]"> / {maxCantrips}</span>
+                    </p>
+                </div>
+                <div>
+                    <p className="text-sm text-[var(--text-secondary)]">{spellsKnownOrPreparedLabel}</p>
+                    <p className="text-3xl font-bold">
+                       <span className={knownLeveledSpellsCount > maxSpellsPrepared ? 'text-red-500' : 'text-[var(--accent-primary)]'}>{knownLeveledSpellsCount}</span>
+                       <span className="text-xl text-[var(--text-muted)]"> / {maxSpellsPrepared}</span>
+                    </p>
+                </div>
+            </div>
+
+            <input
+                type="text"
+                placeholder="Search available spells..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded p-2 text-[var(--text-primary)] mb-4"
+            />
+
+            <div className="flex flex-wrap gap-1 mb-4">
+                {filterButtons.map(filter => {
+                    return (
+                        <Button
+                            key={filter}
+                            type="button"
+                            size="sm"
+                            onClick={() => setLevelFilter(filter)}
+                            className={levelFilter === filter 
+                                ? '!bg-[var(--border-accent-primary)] !text-[var(--bg-primary)] shadow-[0_0_8px_var(--glow-primary)]' 
+                                : 'bg-[var(--bg-secondary)]/80 hover:bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'}
+                        >
+                            {filter}
+                        </Button>
+                    );
+                })}
+            </div>
+
+            <div className="max-h-[400px] overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pr-2">
+                {availableSpells.map(spell => {
+                    const isKnown = knownSpells.includes(spell.name);
+                    const isLocked = spellcastingData && spell.level > 0 && spell.level > maxSpellLevel;
+                    const isCantrip = spell.level === 0;
+                    const cantripsFull = knownCantripsCount >= maxCantrips;
+                    const spellsFull = knownLeveledSpellsCount >= maxSpellsPrepared;
+                    const isDisabled = isLocked || (!isKnown && ((isCantrip && cantripsFull) || (!isCantrip && spellsFull)));
+
+                    return (
+                        <button
+                            type="button"
+                            key={spell.name}
+                            onClick={() => handleToggleSpell(spell)}
+                            disabled={isDisabled}
+                            className={`p-3 rounded-md text-left transition-all duration-200 w-full flex flex-col justify-between border-2 relative ${
+                                isKnown 
+                                ? 'bg-[var(--bg-tertiary)] border-[var(--border-accent-secondary)] shadow-[0_0_10px_var(--glow-secondary)]' 
+                                : isDisabled
+                                ? 'bg-[var(--bg-primary)]/50 border-[var(--border-primary)] opacity-60 cursor-not-allowed'
+                                : 'bg-[var(--bg-secondary)] border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)] hover:border-[var(--border-secondary)]'
+                            }`}
+                        >
+                            {isLocked && <LockIcon className="absolute top-2 right-2 h-4 w-4 text-[var(--text-muted)]"/>}
+                            <p className={`font-bold text-[var(--text-primary)] ${isLocked ? 'pr-6' : ''}`}>{spell.name}</p>
+                            <p className="text-xs text-[var(--text-muted)] mt-1">{isCantrip ? 'Cantrip' : `Level ${spell.level}`}</p>
+                        </button>
+                    );
+                })}
+                 {availableSpells.length === 0 && (
+                    <div className="col-span-full text-center text-[var(--text-muted)] italic py-8">
+                        No spells match your criteria.
+                    </div>
+                 )}
+            </div>
+        </div>
+    );
+};
+
+
 const ItemSelector: React.FC<{onAddItem: (item: Omit<InventoryItem, 'id' | 'equipped' | 'quantity'>) => void}> = ({onAddItem}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [category, setCategory] = useState('All');
@@ -616,179 +999,26 @@ const ItemSelector: React.FC<{onAddItem: (item: Omit<InventoryItem, 'id' | 'equi
             <div className="flex flex-col sm:flex-row gap-3">
                 <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search for an item..." className="flex-grow bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded p-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-primary-hover)]"/>
                 <select value={category} onChange={e => setCategory(e.target.value)} className="bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded p-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-primary-hover)]">
-                    <option value="All">All</option>
+                    <option value="All">All Categories</option>
                     <option value="Weapon">Weapons</option>
                     <option value="Armor">Armor</option>
                     <option value="Gear">Gear</option>
                     <option value="Magic Item">Magic Items</option>
                 </select>
             </div>
-            <div className="max-h-60 overflow-y-auto space-y-2 p-2 bg-[var(--bg-primary)] rounded">
-                {filteredItems.map(item => (
-                    <button type="button" key={item.name} onClick={() => handleAddItem(item)} className="w-full text-left p-2 rounded-md bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors">
-                        <p className="font-bold text-[var(--text-primary)]">{item.name}</p>
-                        <p className="text-xs text-[var(--text-muted)]">{item.category} - {item.cost}</p>
-                    </button>
+            <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
+                {filteredItems.slice(0, 100).map((item, index) => (
+                    <div key={`${item.name}-${index}`} className="flex justify-between items-center p-2 bg-[var(--bg-secondary)]/70 rounded-md">
+                        <div>
+                            <p className="font-bold text-[var(--text-primary)]">{item.name}</p>
+                            <p className="text-xs text-[var(--text-muted)]">{item.category}</p>
+                        </div>
+                        <Button type="button" size="sm" onClick={() => handleAddItem(item)}>Add</Button>
+                    </div>
                 ))}
             </div>
-             <Button type="button" onClick={() => handleAddItem({name: 'Custom Item', weight: 0, category: 'Other', cost: '0 gp', description: ''})}>Add Custom Item</Button>
         </div>
     );
-}
-
-const getSpellcastingInfo = (charClass: string, subclass: string, level: number, abilityScores: Character['abilityScores']) => {
-    const classData = DND_CLASS_DATA[charClass];
-    if (!classData) return null;
-
-    let spellcastingData = classData.spellcasting;
-    // Check for subclass spellcasting (Eldritch Knight, Arcane Trickster)
-    if (subclass && classData.subclasses[subclass]?.spellcasting) {
-        spellcastingData = classData.subclasses[subclass].spellcasting;
-    }
-
-    if (!spellcastingData) return null;
-
-    const getMod = (score: number) => Math.floor((score - 10) / 2);
-    const abilityMod = getMod(abilityScores[spellcastingData.ability]);
-    
-    const maxSpellLevel = (spellcastingData.spellSlots?.[level-1] || []).findIndex(s => s > 0) !== -1 
-        ? (spellcastingData.spellSlots?.[level-1] || []).reduce((max, _, i) => ((spellcastingData.spellSlots?.[level-1][i] || 0) > 0 ? i + 1 : max), 0)
-        : 0;
-
-    const cantripsKnown = spellcastingData.cantripsKnown?.[level-1] || 0;
-    
-    let spellsKnown = 0;
-    if (spellcastingData.spellsKnown) { // Bard, Ranger, Sorcerer, Warlock
-        spellsKnown = spellcastingData.spellsKnown[level-1] || 0;
-    } else { // Prepared casters: Cleric, Druid, Paladin, Wizard, Artificer
-        const casterLevel = ['Paladin', 'Ranger', 'Artificer'].includes(charClass) ? Math.floor(level/2) : level;
-        spellsKnown = Math.max(1, abilityMod + casterLevel);
-    }
-    
-    return { maxSpellLevel, cantripsKnown, spellsKnown, castingType: spellcastingData.spellsKnown ? 'known' : 'prepared' };
-}
-
-const SpellSelector: React.FC<{
-    onSelect: (spellName: string) => void,
-    onRemove: (spellName: string) => void,
-    knownSpells: string[],
-    characterClass: string,
-    subclass: string,
-    characterLevel: number,
-    abilityScores: Character['abilityScores']
-}> = ({onSelect, onRemove, knownSpells, characterClass, subclass, characterLevel, abilityScores}) => {
-    const [levelFilter, setLevelFilter] = useState<number | 'all'>(0);
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const spellInfo = getSpellcastingInfo(characterClass, subclass, characterLevel, abilityScores);
-    
-    const currentCantrips = useMemo(() => knownSpells.filter(s => DND_SPELLS[s]?.level === 0), [knownSpells]);
-    const currentSpells = useMemo(() => knownSpells.filter(s => DND_SPELLS[s]?.level > 0), [knownSpells]);
-
-    const availableSpells = useMemo(() => {
-        return Object.values(DND_SPELLS)
-            .filter(spell => {
-                const classMatch = characterClass ? spell.class.includes(characterClass) : true;
-                const searchMatch = spell.name.toLowerCase().includes(searchTerm.toLowerCase());
-                const levelMatch = levelFilter === 'all' ? true : spell.level === levelFilter;
-                return classMatch && searchMatch && levelMatch;
-            })
-            .sort((a,b) => a.level - b.level || a.name.localeCompare(b.name));
-    }, [characterClass, searchTerm, levelFilter]);
-
-    const spellLevels = [...new Set(Object.values(DND_SPELLS).map(s => s.level))].sort((a,b) => a - b);
-    
-    const handleSelectSpell = (spell: Spell) => {
-        if (knownSpells.includes(spell.name)) {
-            onRemove(spell.name);
-        } else {
-            if (!spellInfo) {
-                onSelect(spell.name);
-                return;
-            };
-            
-            if (spell.level === 0) {
-                if (currentCantrips.length < spellInfo.cantripsKnown) onSelect(spell.name);
-            } else {
-                if (currentSpells.length < spellInfo.spellsKnown) onSelect(spell.name);
-            }
-        }
-    }
-    
-    if (!characterClass || !spellInfo) {
-        return <p className="text-[var(--text-muted)]">Select a class with spellcasting to see available spells.</p>;
-    }
-    
-    return (
-        <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[var(--bg-primary)]/50 p-3 rounded-lg border border-[var(--border-primary)] mb-4">
-                <div className="text-center">
-                    <p className="text-lg font-bold text-[var(--text-primary)]">Cantrips {spellInfo.castingType === 'known' ? 'Known' : 'Prepared'}</p>
-                    <p className="text-2xl font-bold text-[var(--accent-secondary)]">{currentCantrips.length} / {spellInfo.cantripsKnown}</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-lg font-bold text-[var(--text-primary)]">Spells {spellInfo.castingType === 'known' ? 'Known' : 'Prepared'}</p>
-                    <p className="text-2xl font-bold text-[var(--accent-primary)]">{currentSpells.length} / {spellInfo.spellsKnown}</p>
-                </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-                 <input 
-                    type="text"
-                    placeholder="Search available spells..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="flex-grow bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded p-2 text-[var(--text-primary)] focus:ring-2 focus:ring-[var(--accent-primary-hover)]"
-                />
-                <div className="flex items-center gap-1 sm:gap-2 bg-[var(--bg-primary)]/50 p-1 rounded-md overflow-x-auto">
-                    <button type="button" onClick={() => setLevelFilter('all')} className={`px-3 py-1 text-sm rounded transition-colors whitespace-nowrap ${levelFilter === 'all' ? 'bg-[var(--accent-primary-hover)] text-[var(--text-inverted)]' : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--bg-quaternary)]'}`}>All</button>
-                    {spellLevels.map(level => (
-                        <button key={level} type="button" onClick={() => setLevelFilter(level)} disabled={level > spellInfo.maxSpellLevel} className={`px-3 py-1 text-sm rounded transition-colors whitespace-nowrap disabled:bg-[var(--bg-secondary)] disabled:text-[var(--text-muted)]/50 disabled:cursor-not-allowed ${levelFilter === level ? 'bg-[var(--accent-primary-hover)] text-[var(--text-inverted)]' : 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)] hover:bg-[var(--bg-quaternary)]'}`}>{level === 0 ? 'Cantrip' : `Lvl ${level}`}</button>
-                    ))}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-96 overflow-y-auto p-2 bg-[var(--bg-primary)]/50 rounded-lg border border-[var(--border-primary)]">
-                {availableSpells.map(spell => {
-                    const isSelected = knownSpells.includes(spell.name);
-                    const isClassSpell = characterClass ? spell.class.includes(characterClass) : true;
-                    const canLearnLevel = spell.level <= spellInfo.maxSpellLevel;
-                    
-                    let isSelectionDisabled = false;
-                    if (!isSelected) {
-                        if (spell.level === 0) {
-                            isSelectionDisabled = currentCantrips.length >= spellInfo.cantripsKnown;
-                        } else {
-                            isSelectionDisabled = currentSpells.length >= spellInfo.spellsKnown;
-                        }
-                    }
-
-                    return (
-                        <button
-                            key={spell.name}
-                            type="button"
-                            onClick={() => handleSelectSpell(spell)}
-                            disabled={!isClassSpell || !canLearnLevel || isSelectionDisabled}
-                            title={!isClassSpell ? `Not available for ${characterClass || 'your class'}` : !canLearnLevel ? `You cannot learn level ${spell.level} spells yet.` : spell.name}
-                            className={`
-                                p-3 rounded-md text-left text-sm transition-all duration-200 truncate
-                                ${ isSelected 
-                                    ? 'bg-[var(--accent-violet)] text-[var(--text-inverted)] ring-2 ring-[var(--border-accent-violet)] shadow-[0_0_10px_var(--glow-violet)]' 
-                                    : (!isClassSpell || !canLearnLevel || isSelectionDisabled)
-                                        ? 'bg-[var(--bg-secondary)] text-[var(--text-muted)] cursor-not-allowed'
-                                        : 'bg-[var(--bg-tertiary)] hover:bg-[var(--bg-quaternary)] text-[var(--text-secondary)]'
-                                }
-                            `}
-                        >
-                           <p className="font-bold truncate">{spell.name}</p>
-                           <p className="text-xs text-[var(--text-muted)]">{spell.level === 0 ? 'Cantrip' : `Level ${spell.level}`}</p>
-                        </button>
-                    )
-                })}
-                {availableSpells.length === 0 && <p className="col-span-full text-center text-[var(--text-muted)] py-4">No spells match your criteria.</p>}
-            </div>
-        </div>
-    )
-}
+};
 
 export default CharacterForm;

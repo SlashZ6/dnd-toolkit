@@ -3,7 +3,7 @@ import { Character, createEmptyCharacter } from '../types';
 
 // --- IndexedDB Logic ---
 const DB_NAME = 'dnd-players-toolkit';
-const DB_VERSION = 1;
+const DB_VERSION = 5; // Bump version for schema change
 const STORE_NAME = 'characters';
 
 let db: IDBDatabase;
@@ -20,6 +20,22 @@ const initDB = (): Promise<boolean> => {
       const dbInstance = (event.target as IDBOpenDBRequest).result;
       if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
         dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+      // Add new stores for homebrew content
+      if (!dbInstance.objectStoreNames.contains('homebrew_races')) {
+        dbInstance.createObjectStore('homebrew_races', { keyPath: 'id' });
+      }
+      if (!dbInstance.objectStoreNames.contains('homebrew_spells')) {
+        dbInstance.createObjectStore('homebrew_spells', { keyPath: 'id' });
+      }
+      if (!dbInstance.objectStoreNames.contains('homebrew_classes')) {
+        dbInstance.createObjectStore('homebrew_classes', { keyPath: 'id' });
+      }
+      if (!dbInstance.objectStoreNames.contains('homebrew_rules')) {
+        dbInstance.createObjectStore('homebrew_rules', { keyPath: 'id' });
+      }
+      if (!dbInstance.objectStoreNames.contains('homebrew_official_subclasses')) {
+        dbInstance.createObjectStore('homebrew_official_subclasses', { keyPath: 'id' });
       }
     };
 
@@ -111,10 +127,11 @@ export const useCharacters = () => {
         await initDB();
         const storedCharacters = await getAllCharactersDB();
         // Ensure all characters have the latest data structure by merging with a default character object.
-        // This prevents errors if a user has characters stored from an older version of the app.
         const migratedCharacters = storedCharacters.map(char => ({
           ...createEmptyCharacter(char.id), // provides default values for all fields
           ...char, // overrides defaults with stored values
+          companions: char.companions || [],
+          sheetSectionOrder: char.sheetSectionOrder || ['features', 'spells', 'inventory', 'actions', 'notes', 'companions'],
         }));
         setCharacters(migratedCharacters);
       } catch (error) {

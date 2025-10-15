@@ -1,7 +1,5 @@
-
-
-import React, { useState, useEffect } from 'react';
-import { Character, InventoryItem, Feature, Spell } from '../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { Character, InventoryItem, Feature, Spell, SheetSection, Companion, CompanionAction } from '../types';
 import Button from './ui/Button';
 import { SwordsIcon } from './icons/SwordsIcon';
 import { BookIcon } from './icons/BookIcon';
@@ -12,8 +10,9 @@ import { D20Icon } from './icons/D20Icon';
 import InfoDialog from './ui/InfoDialog';
 import { DND_CLASS_DATA } from '../data/dndData';
 import { ARMOR } from '../data/equipmentData';
-// Fix: Import PaintBrushIcon for the new edit crest button.
 import { PaintBrushIcon } from './icons/PaintBrushIcon';
+import { UsersIcon } from './icons/UsersIcon';
+import CompanionSheetCard from './CompanionSheetCard';
 
 interface CharacterSheetProps {
   character: Character;
@@ -23,7 +22,6 @@ interface CharacterSheetProps {
   history?: string[];
   setHistory?: React.Dispatch<React.SetStateAction<string[]>>;
   isReadOnly?: boolean;
-  // Fix: Add onEditCrest to allow navigating to the crest editor from the character sheet.
   onEditCrest?: () => void;
 }
 
@@ -286,27 +284,72 @@ const calculateAC = (character: Character): number => {
 }
 
 const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDelete, onUpdate, history = [], setHistory, isReadOnly = false, onEditCrest }) => {
-  type Tab = 'features' | 'inventory' | 'spells' | 'actions' | 'notes';
-  const [activeTab, setActiveTab] = useState<Tab>('features');
-  const [modalContent, setModalContent] = useState<ModalContent | null>(null);
+  const [activeTab, setActiveTab] = useState<SheetSection>('features');
+  const [modalContent, setModalContent] = useState<ModalContent | CompanionAction | null>(null);
   const [isPortraitModalOpen, setPortraitModalOpen] = useState(false);
 
-  // Fix: The HpTracker component expects an onUpdate function that takes a number,
-  // but the CharacterSheet's onUpdate prop takes a full Character object.
-  // This handler bridges the two by creating an updated character object.
+  const defaultTabs: SheetSection[] = ['features', 'spells', 'inventory', 'actions', 'notes', 'companions'];
+  const [tabs, setTabs] = useState<SheetSection[]>(character.sheetSectionOrder || defaultTabs);
+  const dragItem = useRef<number | null>(null);
+  const dragOverItem = useRef<number | null>(null);
+  
+  useEffect(() => {
+      const characterTabs = character.sheetSectionOrder || defaultTabs;
+      const allTabs = [...new Set([...characterTabs, ...defaultTabs])];
+      const finalTabs = allTabs.filter(t => t !== 'companions' || (character.companions && character.companions.length > 0));
+      setTabs(finalTabs);
+      if (!finalTabs.includes(activeTab)) {
+        setActiveTab('features');
+      }
+  }, [character.sheetSectionOrder, character.companions]);
+
+  const handleDragSort = () => {
+    if (isReadOnly || dragItem.current === null || dragOverItem.current === null) return;
+    
+    const newTabs = [...tabs];
+    const draggedItemContent = newTabs.splice(dragItem.current, 1)[0];
+    newTabs.splice(dragOverItem.current, 0, draggedItemContent);
+    
+    dragItem.current = null;
+    dragOverItem.current = null;
+    setTabs(newTabs);
+
+    if (onUpdate) {
+        const fullSheetOrder = [...new Set([...newTabs, ...defaultTabs])];
+        onUpdate({ ...character, sheetSectionOrder: fullSheetOrder });
+    }
+  };
+
+
   const handleHpUpdate = (newHp: number) => {
     if (onUpdate) {
       onUpdate({ ...character, currentHp: newHp });
     }
   };
+
+  const handleCompanionUpdate = (updatedCompanion: Companion) => {
+    if (onUpdate) {
+        const newCompanions = character.companions.map(c => c.id === updatedCompanion.id ? updatedCompanion : c);
+        onUpdate({ ...character, companions: newCompanions });
+    }
+  };
   
-  const TabButton: React.FC<{tabId: typeof activeTab, children: React.ReactNode, icon: React.ReactNode}> = ({tabId, children, icon}) => (
+  const tabConfig: Record<SheetSection, { label: string, icon: React.ReactNode }> = {
+    features: { label: 'Features', icon: <SwordsIcon className="h-5 w-5"/> },
+    spells: { label: 'Spellbook', icon: <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20v2H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M4 5h16v12H6.5A2.5 2.5 0 0 0 4 19.5V5zM14 9l-2 2-2-2"/><path d="m10 13 2 2 2-2"/></svg> },
+    inventory: { label: 'Inventory', icon: <BackpackIcon className="h-5 w-5"/> },
+    actions: { label: 'Actions', icon: <D20Icon className="h-5 w-5"/> },
+    notes: { label: 'Notes', icon: <BookIcon className="h-5 w-5"/> },
+    companions: { label: 'Companions', icon: <UsersIcon className="h-5 w-5"/> },
+  };
+
+  const TabButton: React.FC<{tabId: SheetSection, children: React.ReactNode, icon: React.ReactNode}> = ({tabId, children, icon}) => (
       <button onClick={() => setActiveTab(tabId)} className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base font-medieval rounded-t-lg transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tabId ? 'bg-[var(--bg-secondary)]/80 border-amber-400 text-amber-300 shadow-[0_3px_12px_rgba(251,191,36,0.4)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]/50'}`}>
           {icon} {children}
       </button>
   );
   
-  const handleOpenModal = (content: ModalContent) => {
+  const handleOpenModal = (content: ModalContent | CompanionAction) => {
     setModalContent(content);
   };
 
@@ -401,8 +444,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
   const getModalAction = () => {
     if (!modalContent || isReadOnly) return {};
 
-    const isFeature = 'id' in modalContent;
+    const isFeature = 'id' in modalContent && 'source' in modalContent;
     const isSpell = 'level' in modalContent;
+    const isCompanionAction = 'id' in modalContent && !('source' in modalContent);
 
     if (isFeature) {
         const feature = modalContent as Feature;
@@ -418,6 +462,9 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
             onAction: handleUseSpell,
             actionDisabled: false
       };
+    }
+    if (isCompanionAction) {
+        return {}; // No action for companion abilities yet
     }
     // It's a common action
     return {
@@ -523,11 +570,21 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
             <div className="lg:col-span-9">
                 <div className="border-b border-[var(--border-primary)] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-px">
-                        <TabButton tabId="features" icon={<SwordsIcon className="h-5 w-5"/>}>Features</TabButton>
-                        <TabButton tabId="spells" icon={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20v2H6.5A2.5 2.5 0 0 1 4 19.5z"/><path d="M4 5h16v12H6.5A2.5 2.5 0 0 0 4 19.5V5zM14 9l-2 2-2-2"/><path d="m10 13 2 2 2-2"/></svg>}>Spellbook</TabButton>
-                        <TabButton tabId="inventory" icon={<BackpackIcon className="h-5 w-5" />}>Inventory</TabButton>
-                        <TabButton tabId="actions" icon={<D20Icon className="h-5 w-5"/>}>Actions</TabButton>
-                        <TabButton tabId="notes" icon={<BookIcon className="h-5 w-5" />}>Notes</TabButton>
+                         {tabs.map((tabId, index) => (
+                            <div
+                                key={tabId}
+                                draggable={!isReadOnly}
+                                onDragStart={() => dragItem.current = index}
+                                onDragEnter={() => dragOverItem.current = index}
+                                onDragEnd={handleDragSort}
+                                onDragOver={(e) => e.preventDefault()}
+                                className={!isReadOnly ? 'cursor-move' : ''}
+                            >
+                                <TabButton tabId={tabId} icon={tabConfig[tabId].icon}>
+                                    {tabConfig[tabId].label}
+                                </TabButton>
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div className="bg-[var(--bg-secondary)]/80 rounded-b-lg p-4 min-h-[400px]">
@@ -602,6 +659,23 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
                         <div className="animate-fade-in bg-[var(--bg-primary)]/50 p-4 rounded-lg">
                             <h3 className="text-xl font-medieval text-amber-300 mb-2">Notes & Backstory</h3>
                             <p className="text-[var(--text-secondary)] whitespace-pre-wrap leading-relaxed">{character.notes || 'No notes or backstory entered.'}</p>
+                        </div>
+                    )}
+                    {activeTab === 'companions' && (
+                        <div className="animate-fade-in space-y-4">
+                            {character.companions && character.companions.length > 0 ? (
+                                character.companions.map(companion => (
+                                    <CompanionSheetCard
+                                        key={companion.id}
+                                        companion={companion}
+                                        onUpdate={handleCompanionUpdate}
+                                        onOpenModal={handleOpenModal}
+                                        isReadOnly={isReadOnly}
+                                    />
+                                ))
+                            ) : (
+                                <p className="text-[var(--text-muted)] text-center py-8 col-span-full">No companions added. You can add them in the character editor.</p>
+                            )}
                         </div>
                     )}
                 </div>

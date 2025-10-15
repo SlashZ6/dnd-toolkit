@@ -8,7 +8,6 @@ interface CardProps {
   onClick: () => void;
 }
 
-// Fix: Export Card as a named export.
 export const Card: React.FC<CardProps> = ({ title, isSelected, onClick }) => {
   return (
     <button
@@ -19,7 +18,6 @@ export const Card: React.FC<CardProps> = ({ title, isSelected, onClick }) => {
         ${
           isSelected
             ? 'bg-[var(--bg-interactive)] border-[var(--border-accent-secondary)] text-[var(--text-inverted)] shadow-lg shadow-[var(--glow-secondary)] ring-2 ring-[var(--accent-secondary)]'
-            // Fix: Corrected truncated Tailwind CSS class.
             : 'bg-[var(--bg-tertiary)] border-[var(--border-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-quaternary)]'
         }
       `}

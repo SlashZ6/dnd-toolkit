@@ -1,10 +1,12 @@
 
+
 import React from 'react';
 import { Character } from '../types';
 import Button from './ui/Button';
 import { SwordsIcon } from './icons/SwordsIcon';
 import { DownloadIcon } from './icons/DownloadIcon';
 import { ExportIcon } from './icons/ExportIcon';
+import { HomebrewIcon } from './icons/HomebrewIcon';
 
 interface CharacterDashboardProps {
   characters: Character[];
@@ -12,6 +14,7 @@ interface CharacterDashboardProps {
   onNewCharacter: () => void;
   onExportCharacterSheet: (id: string) => void;
   onExportDataFile: (id: string) => void;
+  onHomebrew: () => void;
 }
 
 const CharacterCard: React.FC<{
@@ -71,7 +74,7 @@ const CharacterCard: React.FC<{
 const NewCharacterCard: React.FC<{onClick: () => void}> = ({ onClick }) => (
     <div
         onClick={onClick}
-        className="group bg-[var(--bg-secondary)] rounded-lg border-2 border-[var(--border-primary)] hover:border-[var(--border-accent-primary)] transition-all duration-300 cursor-pointer flex items-center justify-center min-h-[288px] hover:shadow-[0_0_15px_var(--glow-primary)] hover:-translate-y-1"
+        className="group bg-[var(--bg-secondary)] rounded-lg border-2 border-dashed border-[var(--border-primary)] hover:border-[var(--border-accent-primary)] transition-all duration-300 cursor-pointer flex items-center justify-center min-h-[288px] hover:shadow-[0_0_15px_var(--glow-primary)] hover:-translate-y-1"
     >
         <div className="text-center p-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-[var(--bg-quaternary)] group-hover:text-[var(--accent-primary)] transition-colors duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -82,8 +85,20 @@ const NewCharacterCard: React.FC<{onClick: () => void}> = ({ onClick }) => (
     </div>
 );
 
+const HomebrewCard: React.FC<{onClick: () => void}> = ({ onClick }) => (
+    <div
+        onClick={onClick}
+        className="group bg-[var(--bg-secondary)] rounded-lg border-2 border-dashed border-[var(--border-primary)] hover:border-[var(--border-accent-primary)] transition-all duration-300 cursor-pointer flex items-center justify-center min-h-[288px] hover:shadow-[0_0_15px_var(--glow-primary)] hover:-translate-y-1"
+    >
+        <div className="text-center p-4">
+            <HomebrewIcon className="h-16 w-16 mx-auto text-[var(--bg-quaternary)] group-hover:text-[var(--accent-primary)] transition-colors duration-300" />
+            <p className="mt-4 text-xl font-medieval text-[var(--text-muted)] group-hover:text-[var(--accent-primary)]">Homebrew Collection</p>
+        </div>
+    </div>
+);
 
-const CharacterDashboard: React.FC<CharacterDashboardProps> = ({ characters, onSelectCharacter, onNewCharacter, onExportCharacterSheet, onExportDataFile }) => {
+
+const CharacterDashboard: React.FC<CharacterDashboardProps> = ({ characters, onSelectCharacter, onNewCharacter, onExportCharacterSheet, onExportDataFile, onHomebrew }) => {
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-8 sm:mb-12">
@@ -103,6 +118,7 @@ const CharacterDashboard: React.FC<CharacterDashboardProps> = ({ characters, onS
             />
           ))}
           <NewCharacterCard onClick={onNewCharacter} />
+          <HomebrewCard onClick={onHomebrew} />
         </div>
 
       {characters.length === 0 && (

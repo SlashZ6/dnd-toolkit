@@ -5,8 +5,8 @@ interface LoginScreenProps {
   onLogin: (role: 'PLAYER' | 'DM') => void;
 }
 
-const PLAYER_CODE = 'dnd';
-const DM_CODE = 'dnd';
+const PLAYER_CODE = 'dnd.player';
+const DM_CODE = 'dnd.secretcode';
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
   const [selection, setSelection] = useState<'PLAYER' | 'DM' | null>(null);
