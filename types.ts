@@ -1,4 +1,3 @@
-
 export interface Race {
   name: string;
   description: string;
@@ -99,6 +98,34 @@ export type PresencePayload = {
   user: ConnectedUser;
 }
 
+export interface CompanionAction {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface Companion {
+  id:string;
+  name: string;
+  type: string;
+  currentHp: number;
+  maxHp: number;
+  ac: number;
+  speed: string;
+  abilityScores: {
+    str: number;
+    dex: number;
+    con: number;
+    int: number;
+    wis: number;
+    cha: number;
+  };
+  actions: CompanionAction[];
+  notes: string;
+}
+
+export type SheetSection = 'features' | 'spells' | 'inventory' | 'actions' | 'notes' | 'companions';
+
 export interface Character {
   id:string;
   name: string;
@@ -132,7 +159,28 @@ export interface Character {
     current: number[];
   };
   crest?: CrestData;
+  companions: Companion[];
+  sheetSectionOrder?: SheetSection[];
+  // For data portability to DM
+  embeddedHomebrew?: {
+    race?: HomebrewRace;
+    class?: HomebrewClass;
+    spells?: HomebrewSpell[];
+  }
 }
+
+export const createEmptyCompanion = (id: string): Companion => ({
+    id,
+    name: '',
+    type: 'Beast',
+    currentHp: 10,
+    maxHp: 10,
+    ac: 10,
+    speed: '30 ft.',
+    abilityScores: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    actions: [],
+    notes: '',
+});
 
 export const createEmptyCharacter = (id: string): Character => ({
   id,
@@ -167,7 +215,150 @@ export const createEmptyCharacter = (id: string): Character => ({
     current: [0, 0, 0, 0, 0, 0, 0, 0, 0],
   },
   crest: undefined,
+  companions: [],
+  sheetSectionOrder: ['features', 'spells', 'inventory', 'actions', 'notes', 'companions'],
+  embeddedHomebrew: {
+    spells: []
+  },
 });
+
+export interface HomebrewRace {
+  id: string;
+  name: string;
+  asi_desc: string;
+  size: 'Small' | 'Medium';
+  speed: number;
+  traits: { id: string; name: string; description: string }[];
+  languages: string; // Comma-separated
+}
+
+export const createEmptyHomebrewRace = (): HomebrewRace => ({
+  id: String(Date.now() + Math.random()),
+  name: '',
+  asi_desc: 'e.g., Increase one score by 2 and another by 1.',
+  size: 'Medium',
+  speed: 30,
+  traits: [],
+  languages: 'Common',
+});
+
+export interface HomebrewSpell {
+  id: string;
+  name: string;
+  level: number;
+  school: string;
+  castingTime: string;
+  range: string;
+  components: string;
+  duration: string;
+  description: string;
+  class: string[]; // Array of class names
+}
+
+export const createEmptyHomebrewSpell = (): HomebrewSpell => ({
+    id: String(Date.now() + Math.random()),
+    name: '',
+    level: 0,
+    school: 'Abjuration',
+    castingTime: '1 action',
+    range: 'Self',
+    components: 'V, S',
+    duration: 'Instantaneous',
+    description: '',
+    class: [],
+});
+
+// New Homebrew Types
+export interface ClassFeature {
+  id: string;
+  level: number;
+  name: string;
+  description: string;
+  uses?: {
+    max: number | 'level' | 'cha' | 'wis' | 'int' | 'str' | 'dex' | 'con' | 'prof';
+  };
+  recharge?: 'short' | 'long';
+}
+
+export interface HomebrewSubclass {
+  id: string;
+  name: string;
+  features: ClassFeature[];
+}
+
+export interface HomebrewOfficialSubclass {
+  id: string;
+  name: string;
+  baseClassName: string;
+  features: ClassFeature[];
+}
+
+export const createEmptyHomebrewOfficialSubclass = (): HomebrewOfficialSubclass => ({
+  id: String(Date.now() + Math.random()),
+  name: '',
+  baseClassName: 'Fighter',
+  features: [],
+});
+
+
+export interface HomebrewClass {
+  id: string;
+  name: string;
+  hitDie: 6 | 8 | 10 | 12;
+  armorProficiencies: Array<'light' | 'medium' | 'heavy' | 'shields'>;
+  weaponProficiencies: Array<'simple' | 'martial'>;
+  skillProficiencies: {
+      count: number;
+      options: 'any' | string[];
+  };
+  savingThrowProficiencies: Array<keyof Character['abilityScores']>;
+  subclassLevel: number;
+  spellcastingAbility: 'none' | keyof Omit<Character['abilityScores'], 'str' | 'dex' | 'con'>;
+  spellcastingProgression: 'none' | 'full' | 'half' | 'third' | 'pact';
+  features: ClassFeature[];
+  subclasses: HomebrewSubclass[];
+}
+
+export const createEmptyClassFeature = (): ClassFeature => ({
+    id: String(Date.now() + Math.random()),
+    level: 1,
+    name: '',
+    description: '',
+});
+
+export const createEmptySubclass = (): HomebrewSubclass => ({
+    id: String(Date.now() + Math.random()),
+    name: 'New Subclass',
+    features: [],
+});
+
+export const createEmptyHomebrewClass = (): HomebrewClass => ({
+    id: String(Date.now() + Math.random()),
+    name: '',
+    hitDie: 8,
+    armorProficiencies: [],
+    weaponProficiencies: [],
+    skillProficiencies: { count: 2, options: 'any' },
+    savingThrowProficiencies: [],
+    subclassLevel: 3,
+    spellcastingAbility: 'none',
+    spellcastingProgression: 'none',
+    features: [],
+    subclasses: [],
+});
+
+export interface HomebrewRule {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export const createEmptyHomebrewRule = (): HomebrewRule => ({
+  id: String(Date.now() + Math.random()),
+  title: '',
+  content: '',
+});
+
 
 export interface CampaignNote {
   id: string;

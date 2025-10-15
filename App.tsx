@@ -18,13 +18,15 @@ import CrestCreator from './components/crest/CrestCreator';
 import SRDSearch from './components/SRDSearch';
 import { SearchIcon } from './components/icons/SearchIcon';
 import ToggleSwitch from './components/ui/ToggleSwitch';
+import HomebrewManager from './components/HomebrewManager';
+import { HomebrewIcon } from './components/icons/HomebrewIcon';
 
 // Declare the html-to-image library for TypeScript
 declare const htmlToImage: {
   toPng: (node: HTMLElement, options?: any) => Promise<string>;
 };
 
-type View = 'DASHBOARD' | 'SHEET' | 'FORM' | 'CREST_CREATOR';
+type View = 'DASHBOARD' | 'SHEET' | 'FORM' | 'CREST_CREATOR' | 'HOMEBREW';
 
 interface PlayerViewProps {
   onLogout: () => void;
@@ -103,7 +105,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
   const handleBack = () => {
     if (currentView === 'FORM' || currentView === 'CREST_CREATOR') {
         handleCancelForm();
-    } else if (currentView === 'SHEET') {
+    } else if (currentView === 'SHEET' || currentView === 'HOMEBREW') {
         setCurrentView('DASHBOARD');
     }
   };
@@ -112,8 +114,8 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
     if (currentView === 'FORM' || currentView === 'CREST_CREATOR') {
         return activeCharacterId ? 'Back to Sheet' : 'Back to Dashboard';
     }
-    if (currentView === 'SHEET') {
-        return 'All Characters';
+    if (currentView === 'SHEET' || currentView === 'HOMEBREW') {
+        return 'Dashboard';
     }
     return 'Back';
   };
@@ -214,6 +216,8 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
           onSave={handleSave}
           onCancel={handleCancelForm}
         /> : null;
+      case 'HOMEBREW':
+        return <HomebrewManager />;
       case 'SHEET':
         if (activeCharacter) {
           return (
@@ -291,6 +295,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
           onNewCharacter={handleNewCharacter}
           onExportCharacterSheet={handleExportCharacterSheet}
           onExportDataFile={handleExportDataFile}
+          onHomebrew={() => setCurrentView('HOMEBREW')}
         />;
     }
   };
@@ -314,6 +319,9 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
          ) : <div /> }
          
          <div className="flex items-center gap-2 sm:gap-4">
+            <Button onClick={() => setCurrentView('HOMEBREW')} variant="ghost" size="sm" className="!p-2" aria-label="Homebrew Collection">
+              <HomebrewIcon className="h-5 w-5" />
+            </Button>
             <Button onClick={() => setSrdSearchOpen(true)} variant="ghost" size="sm" className="!p-2" aria-label="SRD Search">
               <SearchIcon className="h-5 w-5" />
             </Button>
