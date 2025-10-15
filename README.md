@@ -5,4 +5,5 @@ hey.. this is a little app i made using Google gemini Ai to help me and my frien
 you can check it out here:
 ### https://harmonious-gaufre-badbf0.netlify.app/
 
-talk to me to get codes, in the bottom there is a link.
+Go to the instagram at the bottom of the page and message me to get the codes to enter.
+OR just be smart and find the codes in the files...
