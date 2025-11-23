@@ -1,7 +1,6 @@
 
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Character, CrestData } from './types';
+import { Character, CrestData, createEmptyCharacter } from './types';
 import { useCharacters } from './hooks/useCharacters';
 import CharacterForm from './components/CharacterForm';
 import CharacterSheet from './components/CharacterSheet';
@@ -20,6 +19,8 @@ import { SearchIcon } from './components/icons/SearchIcon';
 import ToggleSwitch from './components/ui/ToggleSwitch';
 import HomebrewManager from './components/HomebrewManager';
 import { HomebrewIcon } from './components/icons/HomebrewIcon';
+import { ToastProvider, useToast } from './components/ui/Toast';
+import Footer from './components/Footer';
 
 // Declare the html-to-image library for TypeScript
 declare const htmlToImage: {
@@ -49,6 +50,12 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
   const [history, setHistory] = useState<string[]>([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isSrdSearchOpen, setSrdSearchOpen] = useState(false);
+  
+  const importFileInputRef = useRef<HTMLInputElement>(null);
+  const [characterToUpdate, setCharacterToUpdate] = useState<Character | null>(null);
+  const [isUpdateModalOpen, setUpdateModalOpen] = useState(false);
+
+  const { addToast } = useToast();
 
 
   const activeCharacter = characters.find(c => c.id === activeCharacterId);
@@ -81,14 +88,17 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
       setActiveCharacterId(null);
       setCurrentView('DASHBOARD');
       setDeleteModalOpen(false);
+      addToast('Character deleted.', 'info');
     }
   };
 
   const handleSave = async (charToSave: Character) => {
     if (characters.some(c => c.id === charToSave.id)) {
       await updateCharacter(charToSave);
+      addToast('Character updated successfully.', 'success');
     } else {
       await addCharacter(charToSave);
+      addToast('Character created successfully!', 'success');
     }
     setActiveCharacterId(charToSave.id);
     setCurrentView('SHEET');
@@ -144,9 +154,65 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+        addToast('Character data exported.', 'success');
     } catch (error) {
         console.error('Error exporting character data:', error);
-        alert('Sorry, there was an error exporting the character data file.');
+        addToast('Error exporting character data.', 'error');
+    }
+  };
+  
+  const handleImportCharacter = () => {
+    importFileInputRef.current?.click();
+  };
+  
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const text = e.target?.result as string;
+        const importedData = JSON.parse(text);
+
+        if (typeof importedData.id !== 'string' || typeof importedData.name !== 'string') {
+          throw new Error('Invalid character file format.');
+        }
+        
+        const characterToSave: Character = {
+            ...createEmptyCharacter(importedData.id),
+            ...importedData
+        };
+
+        const existing = characters.find(c => c.id === characterToSave.id);
+        if (existing) {
+          setCharacterToUpdate(characterToSave);
+          setUpdateModalOpen(true);
+        } else {
+          await addCharacter(characterToSave);
+          handleSelectCharacter(characterToSave.id);
+          addToast('Character imported successfully!', 'success');
+        }
+
+      } catch (error) {
+        console.error("Failed to import character:", error);
+        addToast("Failed to import. Invalid file format.", 'error');
+      } finally {
+        if (event.target) {
+            event.target.value = '';
+        }
+      }
+    };
+    reader.readAsText(file);
+  };
+  
+  const confirmUpdate = async () => {
+     if (characterToUpdate) {
+      await updateCharacter(characterToUpdate);
+      setUpdateModalOpen(false);
+      setCharacterToUpdate(null);
+      handleSelectCharacter(characterToUpdate.id);
+      addToast('Character updated from file.', 'success');
     }
   };
 
@@ -154,7 +220,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
     try {
       if (typeof htmlToImage === 'undefined') {
         console.error('html-to-image library not loaded. Make sure the script is in index.html.');
-        alert('Error: Export library failed to load.');
+        addToast('Export library failed to load.', 'error');
         return;
       }
 
@@ -174,9 +240,10 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      addToast('Character sheet image exported!', 'success');
     } catch (error) {
         console.error('Error generating character sheet image:', error);
-        alert('Sorry, there was an error exporting the character sheet. Please try again.');
+        addToast('Error generating character sheet image.', 'error');
     } finally {
         setIsExporting(false);
         setCharacterToExport(null);
@@ -296,6 +363,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
           onExportCharacterSheet={handleExportCharacterSheet}
           onExportDataFile={handleExportDataFile}
           onHomebrew={() => setCurrentView('HOMEBREW')}
+          onImportCharacter={handleImportCharacter}
         />;
     }
   };
@@ -340,15 +408,7 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
       <main className="w-full max-w-screen-2xl flex-grow min-h-0">
         {renderContent()}
       </main>
-      <footer className="w-full max-w-screen-2xl text-center mt-4 text-xs text-[var(--text-muted)] flex-shrink-0 overflow-hidden hidden sm:block">
-        <p className="truncate">
-          Created by <a href="https://www.instagram.com/slashz6_/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary-hover)] hover:text-[var(--accent-primary)] underline transition-colors">SlashZ</a> with Gemini.
-          <span className="mx-2">•</span>
-          All character data is stored locally in your browser using IndexedDB.
-          <span className="mx-2">•</span>
-          <span className="font-medieval text-[var(--text-muted)]/80">Player's Toolkit</span>
-        </p>
-      </footer>
+      <Footer className="max-w-screen-2xl mt-4" />
       <Dialog
         isOpen={isDeleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
@@ -357,8 +417,18 @@ const PlayerView: React.FC<PlayerViewProps> = ({ onLogout, theme, setTheme, back
         description={`Are you sure you want to delete ${activeCharacter?.name || 'this character'} forever? This action cannot be undone.`}
         confirmText="Delete Forever"
       />
+       <Dialog
+        isOpen={isUpdateModalOpen}
+        onClose={() => { setUpdateModalOpen(false); setCharacterToUpdate(null); }}
+        onConfirm={confirmUpdate}
+        title="Update Character?"
+        description={`A character with the same ID already exists (${characterToUpdate?.name}). Would you like to overwrite it with the imported data?`}
+        confirmText="Update"
+        confirmVariant="default"
+      />
+      <input type="file" ref={importFileInputRef} onChange={handleFileSelect} className="hidden" accept=".json" />
       {isExporting && (
-         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+         <div className="fixed inset-0 backdrop-vignette flex items-center justify-center z-50">
             <Loader message="Generating Character Sheet PNG..." />
          </div>
       )}
@@ -407,27 +477,29 @@ const App: React.FC = () => {
     setUserRole(null);
   };
 
-  if (!userRole) {
-    return <LoginScreen onLogin={handleLogin} />;
-  }
-
-  if (userRole === 'DM') {
-    return <DMView 
-      onLogout={handleLogout} 
-      theme={theme} 
-      setTheme={setTheme} 
-      backgroundEffectsEnabled={backgroundEffectsEnabled} 
-      setBackgroundEffectsEnabled={setBackgroundEffectsEnabled} 
-    />;
-  }
-
-  return <PlayerView 
-    onLogout={handleLogout} 
-    theme={theme} 
-    setTheme={setTheme} 
-    backgroundEffectsEnabled={backgroundEffectsEnabled} 
-    setBackgroundEffectsEnabled={setBackgroundEffectsEnabled} 
-  />;
+  return (
+    <ToastProvider>
+      {!userRole ? (
+        <LoginScreen onLogin={handleLogin} />
+      ) : userRole === 'DM' ? (
+        <DMView 
+          onLogout={handleLogout} 
+          theme={theme} 
+          setTheme={setTheme} 
+          backgroundEffectsEnabled={backgroundEffectsEnabled} 
+          setBackgroundEffectsEnabled={setBackgroundEffectsEnabled} 
+        />
+      ) : (
+        <PlayerView 
+          onLogout={handleLogout} 
+          theme={theme} 
+          setTheme={setTheme} 
+          backgroundEffectsEnabled={backgroundEffectsEnabled} 
+          setBackgroundEffectsEnabled={setBackgroundEffectsEnabled} 
+        />
+      )}
+    </ToastProvider>
+  );
 };
 
 export default App;

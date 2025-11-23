@@ -1,3 +1,4 @@
+
 export interface Race {
   name: string;
   description: string;
@@ -359,21 +360,33 @@ export const createEmptyHomebrewRule = (): HomebrewRule => ({
   content: '',
 });
 
+export type NoteType = 'general' | 'quest' | 'location' | 'npc' | 'item' | 'todo';
+export type NoteStatus = 'active' | 'completed' | 'archived';
 
 export interface CampaignNote {
   id: string;
   title: string;
   content: string;
+  type: NoteType;
+  status: NoteStatus;
+  tags: string[];
   createdAt: number;
   lastModified: number;
+  linkedNoteIds?: string[];
+  dmSecrets?: string;
 }
 
 export const createEmptyCampaignNote = (): CampaignNote => ({
   id: String(Date.now() + Math.random()),
   title: 'New Note',
   content: '',
+  type: 'general',
+  status: 'active',
+  tags: [],
   createdAt: Date.now(),
   lastModified: Date.now(),
+  linkedNoteIds: [],
+  dmSecrets: '',
 });
 
 export interface TimelineEvent {
