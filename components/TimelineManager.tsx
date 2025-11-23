@@ -5,6 +5,7 @@ import Button from './ui/Button';
 import Dialog from './ui/Dialog';
 import Loader from './ui/Loader';
 import { TrashIcon } from './icons/TrashIcon';
+import { useToast } from './ui/Toast';
 
 interface TimelineManagerProps {
     events: TimelineEvent[];
@@ -18,6 +19,7 @@ const TimelineManager: React.FC<TimelineManagerProps> = ({ events, addEvent, upd
     const [newEvent, setNewEvent] = useState(createEmptyTimelineEvent());
     const [editingEvent, setEditingEvent] = useState<TimelineEvent | null>(null);
     const [eventToDelete, setEventToDelete] = useState<TimelineEvent | null>(null);
+    const { addToast } = useToast();
 
     const sortedEvents = useMemo(() => {
         return [...events].sort((a, b) => a.day - b.day || a.createdAt - b.createdAt);
@@ -32,12 +34,14 @@ const TimelineManager: React.FC<TimelineManagerProps> = ({ events, addEvent, upd
         e.preventDefault();
         if (!newEvent.description.trim()) return;
         await addEvent(newEvent);
+        addToast('Event added to timeline.', 'success');
         setNewEvent(createEmptyTimelineEvent());
     };
 
     const handleUpdateEvent = async () => {
         if (!editingEvent || !editingEvent.description.trim()) return;
         await updateEvent(editingEvent);
+        addToast('Event updated.', 'success');
         setEditingEvent(null);
     };
 
@@ -48,6 +52,7 @@ const TimelineManager: React.FC<TimelineManagerProps> = ({ events, addEvent, upd
     const confirmDelete = async () => {
         if (eventToDelete) {
             await deleteEvent(eventToDelete.id);
+            addToast('Event deleted.', 'info');
             setEventToDelete(null);
         }
     };

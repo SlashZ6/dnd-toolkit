@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo } from 'react';
 import { DND_SPELLS } from '../data/spellsData';
 import { Spell } from '../types';
@@ -187,7 +188,7 @@ const SRDSearch: React.FC<SRDSearchProps> = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
+      className="fixed inset-0 backdrop-vignette flex items-center justify-center z-50 animate-fade-in"
       onClick={onClose}
       role="dialog"
       aria-modal="true"

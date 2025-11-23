@@ -1,5 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import Button from './ui/Button';
+import Footer from './Footer';
 
 interface LoginScreenProps {
   onLogin: (role: 'PLAYER' | 'DM') => void;
@@ -88,15 +90,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           renderForm()
         )}
       </main>
-      <footer className="w-full max-w-screen-2xl text-center py-4 text-xs text-[var(--text-muted)] flex-shrink-0 overflow-hidden hidden sm:block">
-        <p className="truncate">
-          Created by <a href="https://www.instagram.com/slashz6_/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary-hover)] hover:text-[var(--accent-primary)] underline transition-colors">SlashZ</a> with Gemini.
-          <span className="mx-2">•</span>
-          All character data is stored locally in your browser using IndexedDB.
-          <span className="mx-2">•</span>
-          <span className="font-medieval text-[var(--text-muted)]/80">D&D Toolkit</span>
-        </p>
-      </footer>
+      <Footer className="max-w-screen-2xl" />
     </div>
   );
 };

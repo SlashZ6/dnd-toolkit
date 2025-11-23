@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { Monster, MonsterTrait, createEmptyMonster } from '../types';
 import Button from './ui/Button';
@@ -6,6 +7,8 @@ import Dialog from './ui/Dialog';
 import Loader from './ui/Loader';
 import { MonsterIcon } from './icons/MonsterIcon';
 import { TrashIcon } from './icons/TrashIcon';
+import SmartText from './ui/SmartText';
+import { useToast } from './ui/Toast';
 
 // --- CONSTANTS ---
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"];
@@ -27,6 +30,7 @@ interface BestiaryManagerProps {
     updateMonster: (monster: Monster) => Promise<void>;
     deleteMonster: (id: string) => Promise<void>;
     isLoading: boolean;
+    focusId?: string | null;
 }
 
 const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & {label: string}> = ({label, ...props}) => (
@@ -99,7 +103,10 @@ const StatBlockEntry: React.FC<{ label: string; value?: string | number }> = ({ 
 );
 
 const TraitDisplay: React.FC<{ trait: MonsterTrait }> = ({ trait }) => (
-    <p><strong className="text-amber-300 font-bold italic">{trait.name}.</strong> {trait.description}</p>
+    <div className="mb-2">
+        <strong className="text-amber-300 font-bold italic">{trait.name}.</strong> 
+        <SmartText text={` ${trait.description}`} className="inline text-slate-300" />
+    </div>
 );
 
 const StatBlockDivider = () => (
@@ -337,11 +344,22 @@ const NewMonsterCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 
 // --- MAIN MANAGER COMPONENT ---
 
-const BestiaryManager: React.FC<BestiaryManagerProps> = ({ monsters, addMonster, updateMonster, deleteMonster, isLoading }) => {
+const BestiaryManager: React.FC<BestiaryManagerProps> = ({ monsters, addMonster, updateMonster, deleteMonster, isLoading, focusId }) => {
     const [viewMode, setViewMode] = useState<'DASHBOARD' | 'VIEW' | 'FORM'>('DASHBOARD');
     const [activeMonster, setActiveMonster] = useState<Monster | null>(null);
     const [monsterToDelete, setMonsterToDelete] = useState<Monster | null>(null);
+    const { addToast } = useToast();
   
+    useEffect(() => {
+        if (focusId && monsters.length > 0 && !activeMonster) {
+            const monster = monsters.find(m => m.id === focusId);
+            if (monster) {
+                setActiveMonster(monster);
+                setViewMode('VIEW');
+            }
+        }
+    }, [focusId, monsters, activeMonster]);
+
     const handleNewMonster = () => {
         setActiveMonster(createEmptyMonster(String(Date.now() + Math.random())));
         setViewMode('FORM');
@@ -365,6 +383,7 @@ const BestiaryManager: React.FC<BestiaryManagerProps> = ({ monsters, addMonster,
       } else {
         await updateMonster(monsterToSave);
       }
+      addToast(isNew ? 'Monster created successfully.' : 'Monster updated successfully.', 'success');
       setActiveMonster(monsterToSave);
       setViewMode('VIEW');
     };
@@ -387,6 +406,7 @@ const BestiaryManager: React.FC<BestiaryManagerProps> = ({ monsters, addMonster,
     const confirmDelete = async () => {
         if (monsterToDelete) {
             await deleteMonster(monsterToDelete.id);
+            addToast('Monster deleted.', 'info');
             setMonsterToDelete(null);
         }
     };

@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Character } from '../types';
 import Button from './ui/Button';
@@ -7,6 +6,7 @@ import { SwordsIcon } from './icons/SwordsIcon';
 import { DownloadIcon } from './icons/DownloadIcon';
 import { ExportIcon } from './icons/ExportIcon';
 import { HomebrewIcon } from './icons/HomebrewIcon';
+import { ImportIcon } from './icons/ImportIcon';
 
 interface CharacterDashboardProps {
   characters: Character[];
@@ -15,6 +15,7 @@ interface CharacterDashboardProps {
   onExportCharacterSheet: (id: string) => void;
   onExportDataFile: (id: string) => void;
   onHomebrew: () => void;
+  onImportCharacter: () => void;
 }
 
 const CharacterCard: React.FC<{
@@ -85,6 +86,19 @@ const NewCharacterCard: React.FC<{onClick: () => void}> = ({ onClick }) => (
     </div>
 );
 
+const ImportCard: React.FC<{onClick: () => void}> = ({ onClick }) => (
+    <div
+        onClick={onClick}
+        className="group bg-[var(--bg-secondary)] rounded-lg border-2 border-dashed border-[var(--border-primary)] hover:border-[var(--border-accent-primary)] transition-all duration-300 cursor-pointer flex items-center justify-center min-h-[288px] hover:shadow-[0_0_15px_var(--glow-primary)] hover:-translate-y-1"
+    >
+        <div className="text-center p-4">
+            <ImportIcon className="h-16 w-16 mx-auto text-[var(--bg-quaternary)] group-hover:text-[var(--accent-primary)] transition-colors duration-300" />
+            <p className="mt-4 text-xl font-medieval text-[var(--text-muted)] group-hover:text-[var(--accent-primary)]">Import Character</p>
+        </div>
+    </div>
+);
+
+
 const HomebrewCard: React.FC<{onClick: () => void}> = ({ onClick }) => (
     <div
         onClick={onClick}
@@ -98,7 +112,7 @@ const HomebrewCard: React.FC<{onClick: () => void}> = ({ onClick }) => (
 );
 
 
-const CharacterDashboard: React.FC<CharacterDashboardProps> = ({ characters, onSelectCharacter, onNewCharacter, onExportCharacterSheet, onExportDataFile, onHomebrew }) => {
+const CharacterDashboard: React.FC<CharacterDashboardProps> = ({ characters, onSelectCharacter, onNewCharacter, onExportCharacterSheet, onExportDataFile, onHomebrew, onImportCharacter }) => {
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-8 sm:mb-12">
@@ -118,13 +132,14 @@ const CharacterDashboard: React.FC<CharacterDashboardProps> = ({ characters, onS
             />
           ))}
           <NewCharacterCard onClick={onNewCharacter} />
+          <ImportCard onClick={onImportCharacter} />
           <HomebrewCard onClick={onHomebrew} />
         </div>
 
       {characters.length === 0 && (
           <div className="text-center mt-12 text-[var(--text-muted)]/70">
               <p>You haven't created any characters yet.</p>
-              <p>Click the card above to forge your first hero!</p>
+              <p>Click a card above to forge or import your first hero!</p>
           </div>
       )}
     </div>

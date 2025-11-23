@@ -61,10 +61,9 @@ const CommonActions: React.FC<{onActionSelect: (action: {name: string, descripti
                 <button 
                     key={action.name}
                     onClick={() => onActionSelect(action)}
-                    disabled={isReadOnly}
-                    className="p-3 rounded-md text-left transition-all duration-200 w-full h-full flex flex-col justify-between border-l-4 border-[var(--border-secondary)]/50 bg-[var(--bg-secondary)]/70 hover:bg-[var(--bg-secondary)] text-[var(--text-primary)] disabled:bg-[var(--bg-primary)]/50 disabled:cursor-not-allowed disabled:text-[var(--text-muted)]"
+                    className={`p-3 rounded-md text-left transition-all duration-200 w-full h-full flex flex-col justify-between border-l-4 border-[var(--border-secondary)]/50 bg-[var(--bg-secondary)]/70 text-[var(--text-primary)] ${isReadOnly ? 'cursor-pointer' : 'hover:bg-[var(--bg-tertiary)]/80'}`}
                 >
-                    <strong className="font-bold text-[var(--text-secondary)] disabled:text-[var(--text-muted)]">{action.name}</strong>
+                    <strong className={`font-bold ${isReadOnly ? 'text-[var(--text-muted)]' : 'text-[var(--text-secondary)]'}`}>{action.name}</strong>
                 </button>
             ))}
         </div>

@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import Button from './Button';
 
@@ -25,7 +26,7 @@ const InfoDialog: React.FC<InfoDialogProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
+      className="fixed inset-0 backdrop-vignette flex items-center justify-center z-50 animate-fade-in"
       aria-labelledby="dialog-title"
       role="dialog"
       aria-modal="true"

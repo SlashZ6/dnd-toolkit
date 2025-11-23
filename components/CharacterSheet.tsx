@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Character, InventoryItem, Feature, Spell, SheetSection, Companion, CompanionAction } from '../types';
 import Button from './ui/Button';
@@ -13,6 +14,7 @@ import { ARMOR } from '../data/equipmentData';
 import { PaintBrushIcon } from './icons/PaintBrushIcon';
 import { UsersIcon } from './icons/UsersIcon';
 import CompanionSheetCard from './CompanionSheetCard';
+import { useToast } from './ui/Toast';
 
 interface CharacterSheetProps {
   character: Character;
@@ -111,15 +113,18 @@ const ActionItemCard: React.FC<{
     return (
         <button
             onClick={onClick}
-            disabled={isLocked || isReadOnly}
             className={`
                 p-3 rounded-md text-left transition-all duration-200 w-full h-full flex flex-col justify-between
-                border-l-4
-                ${isLocked || isReadOnly ? 'bg-[var(--bg-primary)]/50 cursor-not-allowed' : `bg-[var(--bg-secondary)]/70 hover:bg-[var(--bg-tertiary)]/80 hover:border-l-4`}
-                ${isLocked || isReadOnly ? 'border-[var(--border-primary)]' : typeColor[type]}
+                border-l-4 cursor-pointer
+                ${isLocked 
+                    ? 'bg-[var(--bg-primary)]/50 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)]/50' 
+                    : isReadOnly 
+                    ? `bg-[var(--bg-secondary)]/70 border-[var(--border-primary)] hover:bg-[var(--bg-tertiary)]/80`
+                    : `bg-[var(--bg-secondary)]/70 hover:bg-[var(--bg-tertiary)]/80 hover:border-l-4 ${typeColor[type]}`
+                }
             `}
         >
-            <strong className={`font-bold ${isLocked || isReadOnly ? 'text-[var(--text-muted)]' : typeColor[type].split(' ')[1]}`}>{name}</strong>
+            <strong className={`font-bold ${isLocked ? 'text-[var(--text-muted)]' : isReadOnly ? 'text-[var(--text-secondary)]' : typeColor[type].split(' ')[1]}`}>{name}</strong>
             {(uses || recharge) && (
                  <div className="text-xs text-[var(--text-muted)] mt-2 text-right">
                     {uses && <span className={`font-mono px-2 py-0.5 rounded ${isLocked || isReadOnly ? 'bg-[var(--bg-primary)]/80 text-[var(--text-muted)]' : 'bg-[var(--bg-primary)]/80'}`}>{uses}</span>}
@@ -287,6 +292,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
   const [activeTab, setActiveTab] = useState<SheetSection>('features');
   const [modalContent, setModalContent] = useState<ModalContent | CompanionAction | null>(null);
   const [isPortraitModalOpen, setPortraitModalOpen] = useState(false);
+  const { addToast } = useToast();
 
   const defaultTabs: SheetSection[] = ['features', 'spells', 'inventory', 'actions', 'notes', 'companions'];
   const [tabs, setTabs] = useState<SheetSection[]>(character.sheetSectionOrder || defaultTabs);
@@ -344,7 +350,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
   };
 
   const TabButton: React.FC<{tabId: SheetSection, children: React.ReactNode, icon: React.ReactNode}> = ({tabId, children, icon}) => (
-      <button onClick={() => setActiveTab(tabId)} className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base font-medieval rounded-t-lg transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tabId ? 'bg-[var(--bg-secondary)]/80 border-amber-400 text-amber-300 shadow-[0_3px_12px_rgba(251,191,36,0.4)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)]/50'}`}>
+      <button onClick={() => setActiveTab(tabId)} className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base font-medieval rounded-t-lg transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tabId ? 'bg-[var(--bg-secondary)]/80 border-amber-400 text-amber-300 shadow-[0_3px_12px_rgba(251,191,36,0.4)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-tertiary)]/50'}`}>
           {icon} {children}
       </button>
   );
@@ -371,6 +377,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
     }
 
     setHistory(prev => [`Used feature: ${feature.name}`, ...prev]);
+    addToast(`Used feature: ${feature.name}`, 'info');
     setModalContent(null);
   };
   
@@ -378,12 +385,14 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
     if (!modalContent || !('level' in modalContent) || !setHistory) return;
     const spell = modalContent as Spell;
     setHistory(prev => [`Used spell: ${spell.name}`, ...prev]);
+    addToast(`Cast ${spell.name}.`, 'info');
     setModalContent(null);
   };
 
   const handleUseAction = () => {
       if (!modalContent || 'id' in modalContent || 'level' in modalContent || !setHistory) return;
       setHistory(prev => [`Used action: ${modalContent.name}`, ...prev]);
+      addToast(`Used action: ${modalContent.name}`, 'info');
       setModalContent(null);
   }
 
@@ -425,6 +434,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
 
     setHistory([]);
     onUpdate(updatedChar);
+    addToast('Short Rest taken. Abilities recharged.', 'success');
   };
   
   const handleLongRest = () => {
@@ -439,6 +449,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
     updatedChar.spellSlots.current = [...updatedChar.spellSlots.max];
     setHistory([]);
     onUpdate(updatedChar);
+    addToast('Long Rest taken. HP and resources restored.', 'success');
   };
 
   const getModalAction = () => {
@@ -708,7 +719,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
 
         {isPortraitModalOpen && character.appearanceImage && (
             <div
-                className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
+                className="fixed inset-0 backdrop-vignette flex items-center justify-center z-50 animate-fade-in"
                 onClick={() => setPortraitModalOpen(false)}
                 role="dialog"
                 aria-modal="true"

@@ -1,8 +1,8 @@
 
-
 import React, { useState, useCallback } from 'react';
 import * as ALL_GENERATORS from '../data/generatorData';
 import Button from './ui/Button';
+import { useToast } from './ui/Toast';
 
 // Helper function to get a random item from an array
 const randomItem = (arr: ReadonlyArray<string>): string => arr[Math.floor(Math.random() * arr.length)];
@@ -26,13 +26,12 @@ const ResultCard: React.FC<{
     textToCopy: string | null;
     children?: React.ReactNode;
 }> = ({ title, result, onGenerate, textToCopy, children }) => {
-    const [copied, setCopied] = useState(false);
+    const { addToast } = useToast();
 
     const handleCopy = () => {
         if (textToCopy) {
             navigator.clipboard.writeText(textToCopy);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            addToast('Copied to clipboard!', 'success');
         }
     };
 
@@ -40,7 +39,7 @@ const ResultCard: React.FC<{
         <Section title={title}>
             <div className="flex justify-between items-center mb-2">
                 <Button onClick={onGenerate}>Generate</Button>
-                {result && <Button onClick={handleCopy} variant="ghost" size="sm">{copied ? 'Copied!' : 'Copy Text'}</Button>}
+                {result && <Button onClick={handleCopy} variant="ghost" size="sm">Copy Text</Button>}
             </div>
             <div className="bg-[var(--bg-primary)]/50 p-3 rounded-md min-h-[120px] text-[var(--text-secondary)] flex-grow">
                 {result || <p className="text-[var(--text-muted)] italic">Click "Generate" for inspiration.</p>}

@@ -1,5 +1,4 @@
 
-
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { Character, createEmptyCharacter, NPC, Monster, CampaignNote, TimelineEvent } from '../types';
 import Button from './ui/Button';
@@ -33,7 +32,14 @@ import TimelineManager from './TimelineManager';
 import { MoreVerticalIcon } from './icons/MoreVerticalIcon';
 import SRDSearch from './SRDSearch';
 import { SearchIcon } from './icons/SearchIcon';
-import ToggleSwitch from './ui/ToggleSwitch';
+import EncounterManager from './EncounterManager';
+import { MapIcon } from './icons/MapIcon';
+import { DownloadIcon } from './icons/DownloadIcon';
+import { ImportIcon } from './icons/ImportIcon';
+import DmDashboard from './DmDashboard';
+import { DashboardIcon } from './icons/DashboardIcon';
+import { useToast } from './ui/Toast';
+import Footer from './Footer';
 
 
 interface DMViewProps {
@@ -44,7 +50,89 @@ interface DMViewProps {
   setBackgroundEffectsEnabled: (enabled: boolean) => void;
 }
 
-type DMViewMode = 'characters' | 'npcs' | 'bestiary' | 'notes' | 'calendar' | 'generators' | 'dice';
+type DMViewMode = 'dashboard' | 'characters' | 'npcs' | 'bestiary' | 'notes' | 'calendar' | 'generators' | 'dice' | 'encounter';
+
+// --- DB UTILS FOR BACKUP ---
+const DM_DB_NAME = 'dnd-dm-toolkit';
+const PLAYER_DB_NAME = 'dnd-players-toolkit';
+
+const DM_STORES = ['characters', 'dm_notes', 'npcs', 'bestiary', 'campaign_notes', 'timeline_events'];
+const PLAYER_STORES = ['homebrew_races', 'homebrew_spells', 'homebrew_classes', 'homebrew_rules', 'homebrew_official_subclasses'];
+
+const readAllFromDB = (dbName: string, stores: string[]): Promise<Record<string, any[]>> => {
+    return new Promise((resolve) => {
+        const request = indexedDB.open(dbName);
+        request.onerror = () => resolve({}); // Fail gracefully
+        request.onsuccess = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            const result: Record<string, any[]> = {};
+            let completed = 0;
+
+            if (db.objectStoreNames.length === 0) {
+                resolve({});
+                return;
+            }
+
+            // Filter stores that actually exist in this version of DB
+            const existingStores = stores.filter(s => db.objectStoreNames.contains(s));
+            
+            if (existingStores.length === 0) {
+                resolve({});
+                return;
+            }
+
+            const transaction = db.transaction(existingStores, 'readonly');
+
+            existingStores.forEach(storeName => {
+                const store = transaction.objectStore(storeName);
+                const getAllReq = store.getAll();
+                getAllReq.onsuccess = () => {
+                    result[storeName] = getAllReq.result;
+                    completed++;
+                    if (completed === existingStores.length) {
+                        resolve(result);
+                    }
+                };
+                getAllReq.onerror = () => {
+                    console.error(`Failed to read ${storeName}`);
+                    completed++;
+                    if (completed === existingStores.length) resolve(result);
+                }
+            });
+        };
+    });
+};
+
+const writeAllToDB = (dbName: string, data: Record<string, any[]>, stores: string[]): Promise<void> => {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName);
+        request.onerror = () => reject("Could not open DB");
+        request.onsuccess = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            const existingStores = stores.filter(s => db.objectStoreNames.contains(s));
+            
+            if (existingStores.length === 0) {
+                resolve();
+                return;
+            }
+
+            const transaction = db.transaction(existingStores, 'readwrite');
+            
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+
+            existingStores.forEach(storeName => {
+                if (data[storeName]) {
+                    const store = transaction.objectStore(storeName);
+                    data[storeName].forEach(item => {
+                        store.put(item);
+                    });
+                }
+            });
+        };
+    });
+};
+
 
 const NavItem: React.FC<{
   label: string;
@@ -102,12 +190,21 @@ const DMCharacterCard: React.FC<{
   </div>
 );
 
-const CharactersView: React.FC = () => {
+const CharactersView: React.FC<{ focusId?: string | null }> = ({ focusId }) => {
   const { characters, addCharacter, updateCharacter, deleteCharacter, isLoading } = useDmCharacters();
   const [activeCharacter, setActiveCharacter] = useState<Character | null>(null);
   const [characterToDelete, setCharacterToDelete] = useState<Character | null>(null);
   const [characterToUpdate, setCharacterToUpdate] = useState<Character | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addToast } = useToast();
+
+  // Auto-focus logic
+  useEffect(() => {
+      if (focusId && characters.length > 0 && !activeCharacter) {
+          const char = characters.find(c => c.id === focusId);
+          if (char) setActiveCharacter(char);
+      }
+  }, [focusId, characters, activeCharacter]);
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -137,11 +234,12 @@ const CharactersView: React.FC = () => {
           setCharacterToUpdate(characterToSave);
         } else {
           addCharacter(characterToSave);
+          addToast('Character imported successfully.', 'success');
         }
 
       } catch (error) {
         console.error("Failed to import character:", error);
-        alert("Failed to import character file. Please make sure it's a valid character data file.");
+        addToast("Failed to import character file.", 'error');
       } finally {
         if (event.target) {
             event.target.value = '';
@@ -159,6 +257,7 @@ const CharactersView: React.FC = () => {
     if (characterToDelete) {
       await deleteCharacter(characterToDelete.id);
       setCharacterToDelete(null);
+      addToast('Character deleted.', 'info');
     }
   };
 
@@ -166,6 +265,7 @@ const CharactersView: React.FC = () => {
     if (characterToUpdate) {
       await updateCharacter(characterToUpdate);
       setCharacterToUpdate(null);
+      addToast('Character updated successfully.', 'success');
     }
   };
 
@@ -237,19 +337,26 @@ const CharactersView: React.FC = () => {
 };
 
 const DMView: React.FC<DMViewProps> = ({ onLogout, theme, setTheme, backgroundEffectsEnabled, setBackgroundEffectsEnabled }) => {
-  const [view, setView] = useState<DMViewMode>('characters');
+  const [view, setView] = useState<DMViewMode>('dashboard');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
   const moreButtonRef = useRef<HTMLButtonElement>(null);
   const [isSrdSearchOpen, setSrdSearchOpen] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [focusId, setFocusId] = useState<string | null>(null);
   
   // Lifted state
+  const { characters, isLoading: charactersLoading } = useDmCharacters();
   const { npcs, addNpc, updateNpc, deleteNpc, isLoading: npcsLoading } = useNpcs();
   const { monsters, addMonster, updateMonster, deleteMonster, isLoading: monstersLoading } = useBestiary();
   const { notes, addNote, updateNote, deleteNote, isLoading: notesLoading } = useCampaignNotes();
   const { events, addEvent, updateEvent, deleteEvent, isLoading: eventsLoading } = useTimeline();
   const [diceHistory, setDiceHistory] = useState<RollResult[]>([]);
+
+  const { addToast } = useToast();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -278,17 +385,110 @@ const DMView: React.FC<DMViewProps> = ({ onLogout, theme, setTheme, backgroundEf
 
   const handleSetView = (newView: DMViewMode) => {
     setView(newView);
+    setFocusId(null); // Clear focus when manually changing view
     setIsMoreMenuOpen(false);
+  };
+  
+  const handleNavigate = (type: 'character' | 'npc' | 'monster', id: string) => {
+      if (type === 'character') setView('characters');
+      if (type === 'npc') setView('npcs');
+      if (type === 'monster') setView('bestiary');
+      setFocusId(id);
+  };
+
+  const handleExportCampaign = async () => {
+      setIsExporting(true);
+      // Using setTimeout to yield to the event loop so React can render the Loader
+      setTimeout(async () => {
+          try {
+              const dmData = await readAllFromDB(DM_DB_NAME, DM_STORES);
+              const homebrewData = await readAllFromDB(PLAYER_DB_NAME, PLAYER_STORES);
+              
+              const fullBackup = {
+                  timestamp: Date.now(),
+                  version: '1.0',
+                  ...dmData,
+                  ...homebrewData
+              };
+
+              const jsonString = JSON.stringify(fullBackup, null, 2);
+              const blob = new Blob([jsonString], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              const dateStr = new Date().toISOString().slice(0, 10);
+              link.download = `campaign_backup_${dateStr}.json`;
+              link.href = url;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              URL.revokeObjectURL(url);
+              addToast('Campaign backup exported successfully.', 'success');
+          } catch (err) {
+              console.error("Export failed", err);
+              addToast("Failed to export campaign data.", 'error');
+          } finally {
+              setIsExporting(false);
+          }
+      }, 100);
+  };
+
+  const handleImportCampaignClick = () => {
+      importInputRef.current?.click();
+  };
+
+  const handleImportFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      setIsImporting(true);
+      
+      setTimeout(() => {
+          const reader = new FileReader();
+          reader.onload = async (ev) => {
+              try {
+                  const text = ev.target?.result as string;
+                  const data = JSON.parse(text);
+                  
+                  // Basic Validation
+                  if (!data.timestamp) throw new Error("Invalid backup file.");
+
+                  // Write to DM DB
+                  await writeAllToDB(DM_DB_NAME, data, DM_STORES);
+                  
+                  // Write to Player DB (Homebrew)
+                  await writeAllToDB(PLAYER_DB_NAME, data, PLAYER_STORES);
+
+                  addToast("Campaign imported successfully. Reloading...", 'success');
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+
+              } catch (err) {
+                  console.error("Import failed", err);
+                  addToast("Failed to import campaign data.", 'error');
+                  setIsImporting(false);
+              }
+          };
+          reader.readAsText(file);
+      }, 100);
+      
+      if (e.target) e.target.value = '';
+  };
+
+  const handleDiceRoll = (result: RollResult) => {
+      setDiceHistory(prev => [result, ...prev]);
   };
 
   const renderContent = () => {
     switch (view) {
+      case 'dashboard':
+        return <DmDashboard diceHistory={diceHistory} onRoll={handleDiceRoll} characters={characters} npcs={npcs} monsters={monsters} onNavigate={handleNavigate} />;
       case 'characters':
-        return <CharactersView />;
+        return <CharactersView focusId={focusId} />;
       case 'npcs':
-        return <NpcManager npcs={npcs} addNpc={addNpc} updateNpc={updateNpc} deleteNpc={deleteNpc} isLoading={npcsLoading} />;
+        return <NpcManager npcs={npcs} addNpc={addNpc} updateNpc={updateNpc} deleteNpc={deleteNpc} isLoading={npcsLoading} focusId={focusId} />;
       case 'bestiary':
-        return <BestiaryManager monsters={monsters} addMonster={addMonster} updateMonster={updateMonster} deleteMonster={deleteMonster} isLoading={monstersLoading}/>;
+        return <BestiaryManager monsters={monsters} addMonster={addMonster} updateMonster={updateMonster} deleteMonster={deleteMonster} isLoading={monstersLoading} focusId={focusId} />;
       case 'notes':
         return <NotesManager notes={notes} addNote={addNote} updateNote={updateNote} deleteNote={deleteNote} isLoading={notesLoading} />;
       case 'calendar':
@@ -303,46 +503,72 @@ const DMView: React.FC<DMViewProps> = ({ onLogout, theme, setTheme, backgroundEf
         return <GeneratorManager />;
       case 'dice':
         return <DiceRoller history={diceHistory} setHistory={setDiceHistory} />;
+      case 'encounter':
+        return <EncounterManager characters={characters} npcs={npcs} monsters={monsters} isLoading={charactersLoading || npcsLoading || monstersLoading} />;
       default:
-        return <CharactersView />;
+        return <DmDashboard diceHistory={diceHistory} onRoll={handleDiceRoll} characters={characters} npcs={npcs} monsters={monsters} onNavigate={handleNavigate} />;
     }
   };
 
   return (
     <div className="flex flex-col lg:flex-row h-screen text-[var(--text-primary)]">
+      {isImporting && (
+          <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center">
+              <Loader message="Importing Campaign Data... (This may take a moment)" />
+          </div>
+      )}
+      
+      {isExporting && (
+          <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center">
+              <Loader message="Generating Backup File..." />
+          </div>
+      )}
+      
+      <input type="file" ref={importInputRef} onChange={handleImportFileSelect} className="hidden" accept=".json" />
+
       {/* Sidebar on Desktop, Bottom Bar on Mobile */}
       <aside className="fixed bottom-0 left-0 right-0 z-20 h-16 bg-[var(--bg-secondary)] border-t border-[var(--border-primary)] lg:static lg:h-screen lg:w-56 lg:flex lg:flex-col lg:justify-between lg:border-t-0 lg:border-r lg:p-2 lg:shadow-lg shrink-0">
         {/* Desktop Sidebar Content */}
         <div className="hidden lg:block">
           <h2 className="text-2xl font-medieval text-center text-amber-300 mb-4 mt-2">DM Toolkit</h2>
           <nav>
-            <NavItem label="Characters" view="characters" activeView={view} setView={setView}><UserCircleIcon /></NavItem>
-            <NavItem label="NPCs" view="npcs" activeView={view} setView={setView}><UsersIcon /></NavItem>
-            <NavItem label="Beasts" view="bestiary" activeView={view} setView={setView}><MonsterIcon /></NavItem>
-            <NavItem label="Notes" view="notes" activeView={view} setView={setView}><BookIcon /></NavItem>
-            <NavItem label="Calendar" view="calendar" activeView={view} setView={setView}><CalendarIcon /></NavItem>
+            <NavItem label="Dashboard" view="dashboard" activeView={view} setView={handleSetView}><DashboardIcon /></NavItem>
+            <NavItem label="Characters" view="characters" activeView={view} setView={handleSetView}><UserCircleIcon /></NavItem>
+            <NavItem label="Encounter" view="encounter" activeView={view} setView={handleSetView}><MapIcon /></NavItem>
+            <NavItem label="NPCs" view="npcs" activeView={view} setView={handleSetView}><UsersIcon /></NavItem>
+            <NavItem label="Beasts" view="bestiary" activeView={view} setView={handleSetView}><MonsterIcon /></NavItem>
+            <NavItem label="Notes" view="notes" activeView={view} setView={handleSetView}><BookIcon /></NavItem>
+            <NavItem label="Calendar" view="calendar" activeView={view} setView={handleSetView}><CalendarIcon /></NavItem>
           </nav>
         </div>
-        <div className="hidden lg:block">
+        <div className="hidden lg:block space-y-2">
           <nav className="border-t border-slate-700 pt-2">
-            <NavItem label="Generators" view="generators" activeView={view} setView={setView}><QuillIcon /></NavItem>
-            <NavItem label="Dice Roller" view="dice" activeView={view} setView={setView}><D20Icon /></NavItem>
+            <NavItem label="Generators" view="generators" activeView={view} setView={handleSetView}><QuillIcon /></NavItem>
+            <NavItem label="Dice Roller" view="dice" activeView={view} setView={handleSetView}><D20Icon /></NavItem>
           </nav>
+          <div className="border-t border-slate-700 pt-2 flex gap-2">
+              <button onClick={handleExportCampaign} className="flex-1 flex flex-col items-center justify-center p-2 rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors text-[10px]" title="Export Campaign">
+                  <DownloadIcon className="h-5 w-5 mb-1" /> Export
+              </button>
+              <button onClick={handleImportCampaignClick} className="flex-1 flex flex-col items-center justify-center p-2 rounded-lg text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors text-[10px]" title="Import Campaign">
+                  <ImportIcon className="h-5 w-5 mb-1" /> Import
+              </button>
+          </div>
         </div>
         
         {/* Mobile Bottom Bar Content */}
         <nav className="lg:hidden flex justify-around items-center h-full px-1 relative">
+          <NavItem label="Home" view="dashboard" activeView={view} setView={handleSetView}><DashboardIcon /></NavItem>
           <NavItem label="Chars" view="characters" activeView={view} setView={handleSetView}><UserCircleIcon /></NavItem>
+          <NavItem label="Map" view="encounter" activeView={view} setView={handleSetView}><MapIcon /></NavItem>
           <NavItem label="NPCs" view="npcs" activeView={view} setView={handleSetView}><UsersIcon /></NavItem>
-          <NavItem label="Beasts" view="bestiary" activeView={view} setView={handleSetView}><MonsterIcon /></NavItem>
-          <NavItem label="Dice" view="dice" activeView={view} setView={handleSetView}><D20Icon /></NavItem>
           
           <div className="relative h-full flex items-center justify-center w-full">
               <button
                 ref={moreButtonRef}
                 onClick={() => setIsMoreMenuOpen(prev => !prev)}
                 className={`flex flex-col items-center justify-center w-full p-1 rounded-lg transition-colors duration-200 h-full ${
-                  ['notes', 'calendar', 'generators'].includes(view)
+                  ['bestiary', 'notes', 'calendar', 'generators', 'dice'].includes(view)
                     ? 'bg-[var(--accent-primary)]/20 text-[var(--accent-primary)]'
                     : 'text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'
                 }`}
@@ -360,6 +586,11 @@ const DMView: React.FC<DMViewProps> = ({ onLogout, theme, setTheme, backgroundEf
                 >
                   <ul className="space-y-1">
                     <li>
+                      <button onClick={() => handleSetView('bestiary')} className="w-full flex items-center gap-3 p-2 rounded-md text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-white">
+                        <MonsterIcon className="w-5 h-5" /> Beasts
+                      </button>
+                    </li>
+                    <li>
                       <button onClick={() => handleSetView('notes')} className="w-full flex items-center gap-3 p-2 rounded-md text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-white">
                         <BookIcon className="w-5 h-5" /> Notes
                       </button>
@@ -373,6 +604,22 @@ const DMView: React.FC<DMViewProps> = ({ onLogout, theme, setTheme, backgroundEf
                       <button onClick={() => handleSetView('generators')} className="w-full flex items-center gap-3 p-2 rounded-md text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-white">
                         <QuillIcon className="w-5 h-5" /> Generators
                       </button>
+                    </li>
+                     <li>
+                      <button onClick={() => handleSetView('dice')} className="w-full flex items-center gap-3 p-2 rounded-md text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-white">
+                        <D20Icon className="w-5 h-5" /> Dice
+                      </button>
+                    </li>
+                    <li className="border-t border-[var(--border-primary)] my-1"></li>
+                    <li>
+                        <button onClick={handleExportCampaign} className="w-full flex items-center gap-3 p-2 rounded-md text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-white">
+                            <DownloadIcon className="w-5 h-5" /> Export Campaign
+                        </button>
+                    </li>
+                    <li>
+                        <button onClick={handleImportCampaignClick} className="w-full flex items-center gap-3 p-2 rounded-md text-sm text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-white">
+                            <ImportIcon className="w-5 h-5" /> Import Campaign
+                        </button>
                     </li>
                   </ul>
                 </div>
@@ -433,7 +680,7 @@ const DMView: React.FC<DMViewProps> = ({ onLogout, theme, setTheme, backgroundEf
             </div>
           ) : (
             <div className="relative w-full h-full">
-              <div className="p-4 sm:p-6 lg:p-8 h-full overflow-y-auto">
+              <div className={`h-full overflow-y-auto ${view === 'dashboard' || view === 'encounter' ? '' : 'p-4 sm:p-6 lg:p-8'}`}>
                 {renderContent()}
               </div>
               <div className="fixed right-0 top-1/2 -translate-y-1/2 z-10">
@@ -453,15 +700,7 @@ const DMView: React.FC<DMViewProps> = ({ onLogout, theme, setTheme, backgroundEf
             </div>
           )}
         </main>
-        <footer className="w-full p-2 text-center text-xs text-[var(--text-muted)] flex-shrink-0 lg:p-4 overflow-hidden hidden sm:block">
-            <p className="truncate">
-                Created by <a href="https://www.instagram.com/slashz6_/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary-hover)] hover:text-[var(--accent-primary)] underline transition-colors">SlashZ</a> with Gemini.
-                <span className="mx-2">•</span>
-                All campaign data is stored locally in your browser using IndexedDB.
-                <span className="mx-2">•</span>
-                <span className="font-medieval text-[var(--text-muted)]/80">DM's Toolkit</span>
-            </p>
-        </footer>
+        <Footer className="lg:p-4" />
       </div>
       <SRDSearch isOpen={isSrdSearchOpen} onClose={() => setSrdSearchOpen(false)} />
     </div>

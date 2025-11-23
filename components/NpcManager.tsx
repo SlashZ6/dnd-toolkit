@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { NPC, createEmptyNPC } from '../types';
 import Button from './ui/Button';
 import Dialog from './ui/Dialog';
@@ -6,6 +7,8 @@ import Loader from './ui/Loader';
 import { DND_RACES_DATA } from '../data/racesData';
 import { TrashIcon } from './icons/TrashIcon';
 import { UserCircleIcon } from './icons/UserCircleIcon';
+import SmartText from './ui/SmartText';
+import { useToast } from './ui/Toast';
 
 // --- HELPER COMPONENTS ---
 
@@ -15,6 +18,7 @@ interface NpcManagerProps {
     updateNpc: (npc: NPC) => Promise<void>;
     deleteNpc: (id: string) => Promise<void>;
     isLoading: boolean;
+    focusId?: string | null;
 }
 
 const ALIGNMENTS = [
@@ -49,10 +53,14 @@ const FormTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> &
 );
 
 // --- NEW NPC VIEW COMPONENT ---
-const ViewSection: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
+const ViewSection: React.FC<{ title: string; children: React.ReactNode; className?: string; useSmartText?: boolean }> = ({ title, children, className, useSmartText }) => (
   <div className={className}>
     <h4 className="font-medieval text-xl text-amber-300 mb-2 border-b border-slate-600 pb-1">{title}</h4>
-    <div className="text-slate-300 whitespace-pre-wrap text-sm">{children || <span className="text-slate-500 italic">Not specified.</span>}</div>
+    {useSmartText && typeof children === 'string' ? (
+        <SmartText text={children || "Not specified."} className="text-slate-300 text-sm" />
+    ) : (
+        <div className="text-slate-300 whitespace-pre-wrap text-sm">{children || <span className="text-slate-500 italic">Not specified.</span>}</div>
+    )}
   </div>
 );
 
@@ -109,8 +117,8 @@ const NpcView: React.FC<{ npc: NPC; onEdit: () => void; onBack: () => void; }> =
                            <ViewSection title="Motivations & Goals">{npc.motivationsGoals}</ViewSection>
                            <ViewSection title="Backstory">{npc.backstorySummary}</ViewSection>
                            <ViewSection title="Relationships">{npc.relationships}</ViewSection>
-                           <ViewSection title="Special Abilities">{npc.specialAbilities}</ViewSection>
-                           <ViewSection title="Loot & Inventory">{npc.inventory}</ViewSection>
+                           <ViewSection title="Special Abilities" useSmartText>{npc.specialAbilities}</ViewSection>
+                           <ViewSection title="Loot & Inventory" useSmartText>{npc.inventory}</ViewSection>
                         </div>
                     </div>
                 </div>
@@ -279,11 +287,22 @@ const NewNpcCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 
 // --- MAIN MANAGER COMPONENT ---
 
-const NpcManager: React.FC<NpcManagerProps> = ({ npcs, addNpc, updateNpc, deleteNpc, isLoading }) => {
+const NpcManager: React.FC<NpcManagerProps> = ({ npcs, addNpc, updateNpc, deleteNpc, isLoading, focusId }) => {
     const [viewMode, setViewMode] = useState<'DASHBOARD' | 'VIEW' | 'FORM'>('DASHBOARD');
     const [activeNpc, setActiveNpc] = useState<NPC | null>(null);
     const [npcToDelete, setNpcToDelete] = useState<NPC | null>(null);
+    const { addToast } = useToast();
   
+    useEffect(() => {
+        if (focusId && npcs.length > 0 && !activeNpc) {
+            const npc = npcs.find(n => n.id === focusId);
+            if (npc) {
+                setActiveNpc(npc);
+                setViewMode('VIEW');
+            }
+        }
+    }, [focusId, npcs, activeNpc]);
+
     const handleNewNpc = () => {
         setActiveNpc(createEmptyNPC(String(Date.now() + Math.random())));
         setViewMode('FORM');
@@ -307,6 +326,7 @@ const NpcManager: React.FC<NpcManagerProps> = ({ npcs, addNpc, updateNpc, delete
         } else {
             await updateNpc(npcToSave);
         }
+        addToast(isNew ? 'NPC created successfully.' : 'NPC updated successfully.', 'success');
         setActiveNpc(npcToSave);
         setViewMode('VIEW');
     };
@@ -329,6 +349,7 @@ const NpcManager: React.FC<NpcManagerProps> = ({ npcs, addNpc, updateNpc, delete
     const confirmDelete = async () => {
         if (npcToDelete) {
             await deleteNpc(npcToDelete.id);
+            addToast('NPC deleted.', 'info');
             setNpcToDelete(null);
         }
     };

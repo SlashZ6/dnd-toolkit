@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { ConnectedUser } from '../types';
 import Button from './ui/Button';
@@ -19,7 +20,7 @@ const UserProfileModal: React.FC<{ user: ConnectedUser, onClose: () => void }> =
 
     return (
         <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in"
+            className="fixed inset-0 backdrop-vignette flex items-center justify-center z-50 animate-fade-in"
             aria-labelledby="user-profile-title"
             role="dialog"
             aria-modal="true"

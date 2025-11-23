@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { HomebrewRace, createEmptyHomebrewRace, HomebrewSpell, createEmptyHomebrewSpell, HomebrewClass, createEmptyHomebrewClass, HomebrewRule, createEmptyHomebrewRule, HomebrewOfficialSubclass, createEmptyHomebrewOfficialSubclass } from '../types';
 import { useHomebrewRaces } from '../hooks/useHomebrewRaces';
@@ -17,6 +18,7 @@ import { RuleIcon } from './icons/RuleIcon';
 import HomebrewOfficialSubclassForm from './HomebrewOfficialSubclassForm';
 import { useHomebrewOfficialSubclasses } from '../hooks/useHomebrewOfficialSubclasses';
 import { SubclassIcon } from './icons/SubclassIcon';
+import { useToast } from './ui/Toast';
 
 
 type View = 'LIST' | 'RACE_FORM' | 'SPELL_FORM' | 'CLASS_FORM' | 'SUBCLASS_FORM' | 'RULE_FORM';
@@ -304,6 +306,7 @@ const HomebrewManager: React.FC = () => {
     const { classes, addClass, updateClass, deleteClass, isLoading: classesLoading } = useHomebrewClasses();
     const { subclasses, addSubclass, updateSubclass, deleteSubclass, isLoading: subclassesLoading } = useHomebrewOfficialSubclasses();
     const { rules, addRule, updateRule, deleteRule, isLoading: rulesLoading } = useHomebrewRules();
+    const { addToast } = useToast();
 
     const handleCreate = () => {
         if (activeTab === 'RACES') {
@@ -334,22 +337,29 @@ const HomebrewManager: React.FC = () => {
     };
 
     const handleSave = (item: HomebrewRace | HomebrewSpell | HomebrewClass | HomebrewOfficialSubclass | HomebrewRule) => {
+        let typeLabel = 'Item';
         if (activeTab === 'RACES') {
             const isNew = !races.some(r => r.id === item.id);
             isNew ? addRace(item as HomebrewRace) : updateRace(item as HomebrewRace);
+            typeLabel = 'Race';
         } else if (activeTab === 'SPELLS') {
             const isNew = !spells.some(s => s.id === item.id);
             isNew ? addSpell(item as HomebrewSpell) : updateSpell(item as HomebrewSpell);
+            typeLabel = 'Spell';
         } else if (activeTab === 'CLASSES') {
             const isNew = !classes.some(c => c.id === item.id);
             isNew ? addClass(item as HomebrewClass) : updateClass(item as HomebrewClass);
+            typeLabel = 'Class';
         } else if (activeTab === 'SUBCLASSES') {
             const isNew = !subclasses.some(s => s.id === item.id);
             isNew ? addSubclass(item as HomebrewOfficialSubclass) : updateSubclass(item as HomebrewOfficialSubclass);
+            typeLabel = 'Subclass';
         } else {
             const isNew = !rules.some(r => r.id === item.id);
             isNew ? addRule(item as HomebrewRule) : updateRule(item as HomebrewRule);
+            typeLabel = 'Rule';
         }
+        addToast(`${typeLabel} saved successfully.`, 'success');
         setView('LIST');
         setEditingItem(null);
     };
@@ -365,11 +375,15 @@ const HomebrewManager: React.FC = () => {
 
     const confirmDelete = () => {
         if (!itemToDelete) return;
-        if (activeTab === 'RACES') deleteRace(itemToDelete.id);
-        else if (activeTab === 'SPELLS') deleteSpell(itemToDelete.id);
-        else if (activeTab === 'CLASSES') deleteClass(itemToDelete.id);
-        else if (activeTab === 'SUBCLASSES') deleteSubclass(itemToDelete.id);
-        else deleteRule(itemToDelete.id);
+        
+        let typeLabel = 'Item';
+        if (activeTab === 'RACES') { deleteRace(itemToDelete.id); typeLabel = 'Race'; }
+        else if (activeTab === 'SPELLS') { deleteSpell(itemToDelete.id); typeLabel = 'Spell'; }
+        else if (activeTab === 'CLASSES') { deleteClass(itemToDelete.id); typeLabel = 'Class'; }
+        else if (activeTab === 'SUBCLASSES') { deleteSubclass(itemToDelete.id); typeLabel = 'Subclass'; }
+        else { deleteRule(itemToDelete.id); typeLabel = 'Rule'; }
+
+        addToast(`${typeLabel} deleted.`, 'info');
         setItemToDelete(null);
     };
 
