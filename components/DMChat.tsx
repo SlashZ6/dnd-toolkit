@@ -1,7 +1,6 @@
 
-
 import React, { useState, useEffect, useRef } from 'react';
-import { ChatMessage, Character, ConnectedUser, NPC, Monster, CampaignNote, TimelineEvent } from '../types';
+import { ChatMessage, Character, ConnectedUser, NPC, Monster, CampaignNote, TimelineEvent, ContentPayload } from '../types';
 import { RollResult } from './DiceRoller';
 import Button from './ui/Button';
 import UserProfileModal from './UserProfileModal';
@@ -12,11 +11,13 @@ import { D20Icon } from './icons/D20Icon';
 import { PlusIcon } from './icons/PlusIcon';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { CrestDisplay } from './crest/CrestDisplay';
+import { CrownIcon } from './icons/CrownIcon';
+import { compressImage } from '../utils/imageUtils'; // Import utility
 
 interface DMChatProps {
     activeCharacter: Character;
     messages: ChatMessage[];
-    publishMessage: (type: ChatMessage['type'], payload: ChatMessage['payload']) => void;
+    publishMessage: (type: ChatMessage['type'], payload: ChatMessage['payload'], targetPeerId?: string) => void;
     isConnected: boolean;
     connectedUsers: ConnectedUser[];
     npcs: NPC[];
@@ -24,12 +25,13 @@ interface DMChatProps {
     notes: CampaignNote[];
     timelineEvents: TimelineEvent[];
     diceHistory: RollResult[];
+    targetUser: ConnectedUser | null;
 }
 
 type ShareCategory = 'npcs' | 'monsters' | 'notes' | 'rolls' | 'events';
 
 const MultiShareButton: React.FC<{
-    onShare: (type: ShareCategory, item: any) => void;
+    onShare: (type: ShareCategory, item: any, asSpotlight?: boolean) => void;
     items: {
         npcs: NPC[];
         monsters: Monster[];
@@ -53,8 +55,8 @@ const MultiShareButton: React.FC<{
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const handleShare = (type: ShareCategory, item: any) => {
-        onShare(type, item);
+    const handleShare = (type: ShareCategory, item: any, asSpotlight = false) => {
+        onShare(type, item, asSpotlight);
         setIsOpen(false);
     };
 
@@ -64,12 +66,25 @@ const MultiShareButton: React.FC<{
             return <p className="p-4 text-center text-sm text-[var(--text-muted)]">No {activeTab} to share.</p>;
         }
 
+        const canSpotlight = activeTab === 'npcs' || activeTab === 'monsters' || activeTab === 'notes';
+
         return (
             <div className="max-h-60 overflow-y-auto">
                 {list.map((item: any, index: number) => (
-                    <button key={item.id || index} onClick={() => handleShare(activeTab, item)} className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-[var(--bg-tertiary)] truncate">
-                        {item.name || item.title || `Day ${item.day}`}
-                    </button>
+                    <div key={item.id || index} className="flex items-center gap-1 px-2 hover:bg-[var(--bg-tertiary)] group">
+                        <button onClick={() => handleShare(activeTab, item)} className="flex-grow text-left py-2 text-sm truncate">
+                            {item.name || item.title || `Day ${item.day}`}
+                        </button>
+                        {canSpotlight && (
+                             <button 
+                                onClick={(e) => { e.stopPropagation(); handleShare(activeTab, item, true); }}
+                                className="opacity-30 group-hover:opacity-100 hover:text-[var(--accent-primary)] transition-all p-1"
+                                title="Spotlight: Force open on player screens"
+                            >
+                                <CrownIcon className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
                 ))}
             </div>
         );
@@ -102,9 +117,10 @@ const MultiShareButton: React.FC<{
     );
 };
 
-const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessage, isConnected, connectedUsers, npcs, monsters, notes, timelineEvents, diceHistory }) => {
+const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessage, isConnected, connectedUsers, npcs, monsters, notes, timelineEvents, diceHistory, targetUser }) => {
     const [newMessage, setNewMessage] = useState('');
     const [isOOC, setIsOOC] = useState(false);
+    const [isFleeting, setIsFleeting] = useState(false);
     const [selectedUser, setSelectedUser] = useState<ConnectedUser | null>(null);
     const [sendAs, setSendAs] = useState('dm'); // 'dm' or npc.id
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -122,7 +138,11 @@ const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessa
         const trimmedMessage = newMessage.trim();
         if (!trimmedMessage) return;
         
-        const payload: ChatMessage['payload'] = { message: trimmedMessage };
+        const payload: ChatMessage['payload'] = { 
+            message: trimmedMessage,
+            isFleeting 
+        };
+        
         if (sendAs === 'dm') {
             payload.ooc = isOOC;
         } else {
@@ -132,27 +152,69 @@ const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessa
             }
         }
         
-        publishMessage('chat', payload);
+        publishMessage('chat', payload, targetUser?._peerId);
         setNewMessage('');
+        // Reset fleeting after send to prevent accidental next messages being fleeting
+        setIsFleeting(false); 
     };
 
-    const handleShare = (type: ShareCategory, item: any) => {
+    const handleShare = async (type: ShareCategory, item: any, asSpotlight = false) => {
+        const targetId = targetUser?._peerId;
+
+        if (asSpotlight) {
+             let spotlightData: { title: string, subtitle?: string, description?: string, image?: string } = { title: 'Unknown' };
+             
+             if (type === 'npcs') {
+                 // Compress NPC image for spotlight
+                 const compressedImg = item.image ? await compressImage(item.image, 600, 0.7) : undefined;
+                 spotlightData = {
+                     title: item.name,
+                     subtitle: `${item.race} ${item.classRole}`,
+                     description: item.backstorySummary,
+                     image: compressedImg
+                 };
+             } else if (type === 'monsters') {
+                 // Compress Monster image for spotlight
+                 const compressedImg = item.image ? await compressImage(item.image, 600, 0.7) : undefined;
+                 spotlightData = {
+                     title: item.name,
+                     subtitle: `${item.size} ${item.type}`,
+                     description: `HP: ${item.hp}, AC: ${item.ac}`,
+                     image: compressedImg
+                 };
+             } else if (type === 'notes') {
+                 spotlightData = {
+                     title: item.title,
+                     description: item.content
+                 };
+             }
+
+             publishMessage('session_control', {
+                 control: {
+                     type: 'SPOTLIGHT',
+                     spotlightData
+                 }
+             }, targetId);
+             
+             return;
+        }
+
         switch (type) {
             case 'npcs':
-                publishMessage('npc_share', { npc: { name: item.name, race: item.race, classRole: item.classRole, alignment: item.alignment, backstorySummary: item.backstorySummary } });
+                publishMessage('npc_share', { npc: { name: item.name, race: item.race, classRole: item.classRole, alignment: item.alignment, backstorySummary: item.backstorySummary } }, targetId);
                 break;
             case 'monsters':
-                publishMessage('beast_share', { beast: { name: item.name, size: item.size, type: item.type, alignment: item.alignment, ac: item.ac, hp: item.hp } });
+                publishMessage('beast_share', { beast: { name: item.name, size: item.size, type: item.type, alignment: item.alignment, ac: item.ac, hp: item.hp } }, targetId);
                 break;
             case 'notes':
                 const contentSnippet = item.content.substring(0, 200) + (item.content.length > 200 ? '...' : '');
-                publishMessage('note_share', { note: { title: item.title, content: contentSnippet } });
+                publishMessage('note_share', { note: { title: item.title, content: contentSnippet } }, targetId);
                 break;
             case 'rolls':
-                publishMessage('roll_share', { roll: { title: item.title, total: item.total, formula: item.formula } });
+                publishMessage('roll_share', { roll: { title: item.title, total: item.total, formula: item.formula } }, targetId);
                 break;
             case 'events':
-                publishMessage('timeline_event_share', { event: { day: item.day, description: item.description } });
+                publishMessage('timeline_event_share', { event: { day: item.day, description: item.description } }, targetId);
                 break;
         }
     };
@@ -164,101 +226,118 @@ const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessa
 
     const renderMessage = (msg: ChatMessage) => {
         const time = formatTimestamp(msg.timestamp);
+        const payload = msg.payload as ContentPayload;
+        
+        const isPrivate = !!msg.targetId;
+        const privateLabel = isPrivate ? <span className="text-[10px] text-[var(--accent-secondary)] italic ml-2">(Private)</span> : null;
+
         switch (msg.type) {
             case 'stat':
                  return (
                     <div className="text-center my-3 text-sm text-[var(--accent-primary)] italic px-4 py-1.5 bg-[var(--bg-secondary)]/50 rounded-md">
-                        <strong className="font-bold not-italic">{msg.payload.characterName}</strong> shares: {msg.payload.statName} is <strong className="font-bold not-italic">{msg.payload.statValue}</strong>
+                        <strong className="font-bold not-italic">{payload.characterName}</strong> shares: {payload.statName} is <strong className="font-bold not-italic">{payload.statValue}</strong>
                     </div>
                 );
             case 'action':
                 return (
                     <div className="text-center my-3 text-sm text-[var(--accent-secondary)] italic px-4 py-1.5 bg-[var(--bg-secondary)]/50 rounded-md">
-                        <strong className="font-bold not-italic">{msg.payload.characterName}</strong> {msg.payload.action}
+                        <strong className="font-bold not-italic">{payload.characterName}</strong> {payload.action}
                     </div>
                 );
+            case 'ready_response':
+                 const readyPayload = payload.readyResponse;
+                 if (readyPayload) {
+                     return (
+                         <div className="text-center my-2 text-xs text-[var(--text-muted)] bg-[var(--bg-primary)]/30 rounded py-1 border border-[var(--border-secondary)]">
+                             <strong>{connectedUsers.find(u => u.id === readyPayload.userId)?.name || 'Someone'}</strong> is {readyPayload.isReady ? <span className="text-green-400 font-bold">READY</span> : <span className="text-red-400 font-bold">NOT READY</span>}
+                         </div>
+                     );
+                 }
+                 return null;
              case 'npc_share':
-                return msg.payload.npc && (
+                return payload.npc && (
                     <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-[var(--border-accent-primary)]">
-                        <p className="font-bold text-[var(--accent-primary)]">{msg.payload.npc.name}</p>
-                        <p className="text-sm text-[var(--text-muted)]">{msg.payload.npc.race}, {msg.payload.npc.classRole}, {msg.payload.npc.alignment}</p>
-                        {msg.payload.npc.backstorySummary && <p className="text-sm text-[var(--text-secondary)] mt-2 italic">({msg.payload.npc.backstorySummary})</p>}
+                        <p className="font-bold text-[var(--accent-primary)]">{payload.npc.name} {privateLabel}</p>
+                        <p className="text-sm text-[var(--text-muted)]">{payload.npc.race}, {payload.npc.classRole}, {payload.npc.alignment}</p>
+                        {payload.npc.backstorySummary && <p className="text-sm text-[var(--text-secondary)] mt-2 italic">({payload.npc.backstorySummary})</p>}
                         <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                     </div>
                 );
              case 'beast_share':
-                return msg.payload.beast && (
+                return payload.beast && (
                     <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-[var(--bg-destructive)]">
-                        <p className="font-bold text-[var(--bg-destructive)]">{msg.payload.beast.name}</p>
-                        <p className="text-sm text-[var(--text-muted)]">{msg.payload.beast.size}, {msg.payload.beast.type}, {msg.payload.beast.alignment}</p>
-                        <p className="text-sm text-[var(--text-secondary)] mt-2">HP: {msg.payload.beast.hp}, AC: {msg.payload.beast.ac}</p>
+                        <p className="font-bold text-[var(--bg-destructive)]">{payload.beast.name} {privateLabel}</p>
+                        <p className="text-sm text-[var(--text-muted)]">{payload.beast.size}, {payload.beast.type}, {payload.beast.alignment}</p>
+                        <p className="text-sm text-[var(--text-secondary)] mt-2">HP: {payload.beast.hp}, AC: {payload.beast.ac}</p>
                         <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                     </div>
                 );
              case 'note_share':
-                return msg.payload.note && (
+                return payload.note && (
                     <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-[var(--border-accent-secondary)]">
                         <div className="flex items-center gap-2 mb-2">
                              <BookIcon className="w-5 h-5 text-[var(--accent-secondary)]" />
-                            <p className="font-bold text-[var(--accent-secondary)]">{msg.payload.note.title}</p>
+                            <p className="font-bold text-[var(--accent-secondary)]">{payload.note.title} {privateLabel}</p>
                         </div>
-                        <p className="text-sm text-[var(--text-secondary)] italic">"{msg.payload.note.content}"</p>
+                        <p className="text-sm text-[var(--text-secondary)] italic">"{payload.note.content}"</p>
                         <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                     </div>
                 );
             case 'roll_share':
-                 return msg.payload.roll && (
-                    <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-[var(--border-accent-violet)]">
+                 return payload.roll && (
+                    <div className={`my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 ${payload.roll.isCrit ? 'border-green-500' : payload.roll.isFumble ? 'border-red-500' : 'border-[var(--border-accent-violet)]'}`}>
                          <div className="flex justify-between items-start">
-                            <p className="font-bold text-[var(--accent-violet)]">{msg.payload.roll.title}</p>
-                            <p className="text-2xl font-bold text-[var(--text-primary)]">{msg.payload.roll.total}</p>
+                            <p className="font-bold text-[var(--accent-violet)]">{payload.roll.title} {privateLabel}</p>
+                            <p className={`text-2xl font-bold ${payload.roll.isCrit ? 'text-green-400' : payload.roll.isFumble ? 'text-red-400' : 'text-[var(--text-primary)]'}`}>{payload.roll.total}</p>
                         </div>
-                        <p className="text-sm text-[var(--text-muted)] font-mono mt-1">{msg.payload.roll.formula}</p>
+                        <p className="text-sm text-[var(--text-muted)] font-mono mt-1">{payload.roll.formula}</p>
                         <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                     </div>
                 );
             case 'timeline_event_share':
-                return msg.payload.event && (
+                return payload.event && (
                     <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-[var(--border-accent-primary)]">
                         <div className="flex items-center gap-2 mb-2">
                             <CalendarIcon className="w-5 h-5 text-[var(--accent-primary)]" />
-                            <p className="font-bold text-[var(--accent-primary)]">Timeline Event: Day {msg.payload.event.day}</p>
+                            <p className="font-bold text-[var(--accent-primary)]">Timeline Event: Day {payload.event.day} {privateLabel}</p>
                         </div>
-                        <p className="text-sm text-[var(--text-secondary)] italic">"{msg.payload.event.description}"</p>
+                        <p className="text-sm text-[var(--text-secondary)] italic">"{payload.event.description}"</p>
                         <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                     </div>
                 );
             case 'chat':
             default:
-                const isNpcMessage = msg.payload.asNPC;
+                const isNpcMessage = payload.asNPC;
                 if (isNpcMessage) {
                     return (
                          <div className="flex flex-col items-start">
-                            <div className="p-2 px-3 rounded-lg max-w-[85%] sm:max-w-[75%] shadow-md bg-[var(--bg-tertiary)]/60 text-[var(--text-primary)] rounded-bl-none border-l-4 border-[var(--border-accent-primary)]">
+                            <div className={`p-2 px-3 rounded-lg max-w-[85%] sm:max-w-[75%] shadow-md bg-[var(--bg-tertiary)]/60 text-[var(--text-primary)] rounded-bl-none border-l-4 border-[var(--border-accent-primary)] ${payload.isFleeting ? 'opacity-70 italic border-l-purple-500' : ''}`}>
                                 <div className="flex items-baseline gap-2 text-xs mb-1">
-                                    <p className="font-bold text-[var(--accent-primary)]">{isNpcMessage.name}</p>
+                                    <p className="font-bold text-[var(--accent-primary)]">{isNpcMessage.name} {privateLabel}</p>
                                     <time className="text-[var(--text-muted)]">{time}</time>
                                 </div>
-                                <p className="whitespace-pre-wrap break-words">{msg.payload.message}</p>
+                                <p className="whitespace-pre-wrap break-words">{payload.message}</p>
+                                {payload.isFleeting && <p className="text-[10px] text-purple-400 mt-1 uppercase font-bold text-right">Fleeting Whisper</p>}
                             </div>
                         </div>
                     )
                 }
 
                 const isCurrentUser = msg.user === activeCharacter.name;
-                const isOOCMessage = msg.payload.ooc;
+                const isOOCMessage = payload.ooc;
                 return (
                      <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
-                        <div className={`p-2 px-3 rounded-lg max-w-[85%] sm:max-w-[75%] shadow-md ${isCurrentUser ? 'bg-[var(--bg-destructive)]/70 text-[var(--text-inverted)] rounded-br-none' : 'bg-[var(--bg-tertiary)]/80 text-[var(--text-primary)] rounded-bl-none'}`}>
+                        <div className={`p-2 px-3 rounded-lg max-w-[85%] sm:max-w-[75%] shadow-md ${isCurrentUser ? 'bg-[var(--bg-destructive)]/70 text-[var(--text-inverted)] rounded-br-none' : 'bg-[var(--bg-tertiary)]/80 text-[var(--text-primary)] rounded-bl-none'} ${payload.isFleeting ? 'border border-purple-500/50' : ''}`}>
                             <div className="flex items-baseline gap-2 text-xs mb-1">
-                                <p className={`font-bold ${isCurrentUser ? 'text-red-300' : 'text-[var(--accent-primary)]'}`}>{msg.user}</p>
+                                <p className={`font-bold ${isCurrentUser ? 'text-red-300' : 'text-[var(--accent-primary)]'}`}>{msg.user} {privateLabel}</p>
                                 <time className="text-[var(--text-muted)]">{time}</time>
                             </div>
                             {isOOCMessage ? (
-                                <p className="whitespace-pre-wrap break-words text-[var(--text-muted)] italic"><span className="font-bold not-italic mr-1">(OOC)</span>{msg.payload.message}</p>
+                                <p className="whitespace-pre-wrap break-words text-[var(--text-muted)] italic"><span className="font-bold not-italic mr-1">(OOC)</span>{payload.message}</p>
                             ) : (
-                                <p className="whitespace-pre-wrap break-words">{msg.payload.message}</p>
+                                <p className="whitespace-pre-wrap break-words">{payload.message}</p>
                             )}
+                             {payload.isFleeting && <p className="text-[10px] text-purple-400 mt-1 uppercase font-bold text-right">Fleeting Whisper</p>}
                         </div>
                     </div>
                 );
@@ -303,7 +382,7 @@ const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessa
             </header>
 
             <div className="flex-grow p-4 overflow-y-auto space-y-4 min-h-0">
-                {messages.map((msg) => (
+                {messages.slice(-10).map((msg) => (
                     <div key={msg.id}>
                         {renderMessage(msg)}
                     </div>
@@ -324,12 +403,12 @@ const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessa
                         }}
                     />
 
-                    <div className="flex-grow flex items-center bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg focus-within:ring-2 focus-within:ring-[var(--accent-secondary)] transition-all">
+                    <div className="flex-grow flex items-center bg-[var(--bg-secondary)] border border-[var(--border-primary)] rounded-lg focus-within:ring-2 focus-within:ring-[var(--accent-secondary)] transition-all overflow-hidden">
                         <select
                             id="send-as"
                             value={sendAs}
                             onChange={e => setSendAs(e.target.value)}
-                            className="bg-transparent border-0 rounded-l-lg p-2 text-sm text-[var(--text-primary)] focus:outline-none h-full appearance-none pr-8 bg-no-repeat bg-right"
+                            className="bg-transparent border-0 rounded-l-lg p-2 text-sm text-[var(--text-primary)] focus:outline-none h-full appearance-none pr-8 bg-no-repeat bg-right max-w-[8rem] sm:max-w-[12rem] truncate cursor-pointer"
                             style={{backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`, backgroundPosition: 'right 0.5rem center'}}
                         >
                             <option value="dm" className="bg-[var(--bg-secondary)]">DM</option>
@@ -342,11 +421,19 @@ const DMChat: React.FC<DMChatProps> = ({ activeCharacter, messages, publishMessa
                             type="text"
                             value={newMessage}
                             onChange={e => setNewMessage(e.target.value)}
-                            placeholder={isConnected ? "Send a message..." : "Connecting to chat..."}
-                            className="w-full bg-transparent border-0 border-l border-l-[var(--border-primary)] p-2 text-[var(--text-primary)] focus:outline-none"
+                            placeholder={isConnected ? (targetUser ? `Message ${targetUser.name}...` : "Message everyone...") : "Connecting..."}
+                            className="flex-1 min-w-0 bg-transparent border-0 border-l border-l-[var(--border-primary)] p-2 text-[var(--text-primary)] focus:outline-none"
                             disabled={!isConnected}
                             aria-label="New Message"
                         />
+                        <button 
+                            type="button" 
+                            onClick={() => setIsFleeting(!isFleeting)} 
+                            className={`px-2 text-xs font-bold shrink-0 ${isFleeting ? 'text-purple-400' : 'text-[var(--text-muted)]'} disabled:opacity-50`} 
+                            title="Fleeting: Message fades after 20s"
+                        >
+                            FADE
+                        </button>
                          <button 
                             type="button" 
                             onClick={() => setIsOOC(!isOOC)} 

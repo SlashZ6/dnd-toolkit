@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { HomebrewRace, createEmptyHomebrewRace, HomebrewSpell, createEmptyHomebrewSpell, HomebrewClass, createEmptyHomebrewClass, HomebrewRule, createEmptyHomebrewRule, HomebrewOfficialSubclass, createEmptyHomebrewOfficialSubclass } from '../types';
 import { useHomebrewRaces } from '../hooks/useHomebrewRaces';
@@ -106,7 +105,7 @@ const HomebrewRaceForm: React.FC<{
     };
 
     const addTrait = () => {
-        setFormData(prev => ({ ...prev, traits: [...prev.traits, { id: String(Date.now() + Math.random()), name: '', description: '' }] }));
+        setFormData(prev => ({ ...prev, traits: [...prev.traits, { id: String(Date.now() + Math.random()), name: '', description: '', source: 'race' }] }));
     };
 
     const removeTrait = (id: string) => {

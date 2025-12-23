@@ -1,11 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ChatMessage, Character, ConnectedUser } from '../types';
+import { ChatMessage, Character, ConnectedUser, ContentPayload } from '../types';
 import Button from './ui/Button';
-import { useMqttChat } from '../hooks/useMqttChat';
 import UserProfileModal from './UserProfileModal';
-import { MonsterIcon } from './icons/MonsterIcon';
-import { UsersIcon } from './icons/UsersIcon';
 import { BookIcon } from './icons/BookIcon';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { CrestDisplay } from './crest/CrestDisplay';
@@ -13,6 +10,10 @@ import { CrestDisplay } from './crest/CrestDisplay';
 interface CampaignChatProps {
     activeCharacter: Character;
     history: string[];
+    messages: ChatMessage[];
+    publishMessage: (type: ChatMessage['type'], payload: ChatMessage['payload']) => void;
+    isConnected: boolean;
+    connectedUsers: ConnectedUser[];
 }
 
 const StatShareButton: React.FC<{ onShare: (name: string, value: string | number) => void, character: Character }> = ({ onShare, character }) => {
@@ -122,9 +123,47 @@ const HistoryShareButton: React.FC<{ onShare: (actionText: string) => void; hist
     );
 };
 
+// Component for Fleeting Messages
+const FleetingMessage: React.FC<{ message: string, timestamp: number }> = ({ message, timestamp }) => {
+    const [opacity, setOpacity] = useState(1);
+    const [blur, setBlur] = useState(0);
 
-const CampaignChat: React.FC<CampaignChatProps> = ({ activeCharacter, history }) => {
-    const { messages, publishMessage, isConnected, connectedUsers } = useMqttChat(activeCharacter);
+    useEffect(() => {
+        const DURATION = 10000; // 20s lifetime
+        const interval = setInterval(() => {
+            const age = Date.now() - timestamp;
+            if (age > DURATION) {
+                setOpacity(0);
+                setBlur(10);
+                clearInterval(interval);
+            } else if (age > DURATION * 0.5) {
+                // Start fading in last half
+                const progress = (age - (DURATION * 0.5)) / (DURATION * 0.5);
+                setOpacity(1 - progress);
+                setBlur(progress * 5);
+            }
+        }, 100);
+        return () => clearInterval(interval);
+    }, [timestamp]);
+
+    if (opacity <= 0) return null;
+
+    return (
+        <div 
+            style={{ 
+                opacity, 
+                filter: `blur(${blur}px)`,
+                transition: 'opacity 0.1s linear, filter 0.1s linear'
+            }}
+            className="whitespace-pre-wrap break-words italic text-purple-300 bg-purple-900/10 p-2 rounded border border-purple-500/30"
+        >
+            <span className="text-[10px] font-bold uppercase tracking-wider block mb-1 opacity-70">Fleeting Whisper</span>
+            {message}
+        </div>
+    );
+};
+
+const CampaignChat: React.FC<CampaignChatProps> = ({ activeCharacter, history, messages, publishMessage, isConnected, connectedUsers }) => {
     const [newMessage, setNewMessage] = useState('');
     const [isOOC, setIsOOC] = useState(false);
     const [selectedUser, setSelectedUser] = useState<ConnectedUser | null>(null);
@@ -169,83 +208,88 @@ const CampaignChat: React.FC<CampaignChatProps> = ({ activeCharacter, history })
 
     const renderMessage = (msg: ChatMessage) => {
         const time = formatTimestamp(msg.timestamp);
+        
+        // Handle Fleeting Check: If too old, don't render at all
+        const payload = msg.payload as ContentPayload;
+        if (payload.isFleeting && Date.now() - msg.timestamp > 20000) return null;
+
         switch (msg.type) {
             case 'stat':
                  return (
                     <div className="text-center my-3 text-sm text-[var(--accent-primary)] italic px-4 py-1.5 bg-[var(--bg-secondary)]/50 rounded-md">
-                        <strong className="font-bold not-italic">{msg.payload.characterName}</strong> shares: {msg.payload.statName} is <strong className="font-bold not-italic">{msg.payload.statValue}</strong>
+                        <strong className="font-bold not-italic">{payload.characterName}</strong> shares: {payload.statName} is <strong className="font-bold not-italic">{payload.statValue}</strong>
                     </div>
                 );
             case 'action':
                 return (
                     <div className="text-center my-3 text-sm text-[var(--accent-secondary)] italic px-4 py-1.5 bg-[var(--bg-secondary)]/50 rounded-md">
-                        <strong className="font-bold not-italic">{msg.payload.characterName}</strong> {msg.payload.action}
+                        <strong className="font-bold not-italic">{payload.characterName}</strong> {payload.action}
                     </div>
                 );
             case 'npc_share':
-                return msg.payload.npc && (
+                return payload.npc && (
                     <div className="flex flex-col items-start">
                         <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-amber-500 max-w-[85%] sm:max-w-[75%]">
-                            <p className="font-bold text-amber-300">{msg.payload.npc.name}</p>
-                            <p className="text-sm text-[var(--text-muted)]">{msg.payload.npc.race}, {msg.payload.npc.classRole}, {msg.payload.npc.alignment}</p>
-                            {msg.payload.npc.backstorySummary && <p className="text-sm text-[var(--text-secondary)] mt-2 italic">({msg.payload.npc.backstorySummary})</p>}
+                            <p className="font-bold text-amber-300">{payload.npc.name}</p>
+                            <p className="text-sm text-[var(--text-muted)]">{payload.npc.race}, {payload.npc.classRole}, {payload.npc.alignment}</p>
+                            {payload.npc.backstorySummary && <p className="text-sm text-[var(--text-secondary)] mt-2 italic">({payload.npc.backstorySummary})</p>}
                             <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                         </div>
                     </div>
                 );
              case 'beast_share':
-                return msg.payload.beast && (
+                return payload.beast && (
                     <div className="flex flex-col items-start">
                         <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-red-500 max-w-[85%] sm:max-w-[75%]">
-                            <p className="font-bold text-red-400">{msg.payload.beast.name}</p>
-                            <p className="text-sm text-[var(--text-muted)]">{msg.payload.beast.size}, {msg.payload.beast.type}, {msg.payload.beast.alignment}</p>
-                            <p className="text-sm text-[var(--text-secondary)] mt-2">HP: {msg.payload.beast.hp}, AC: {msg.payload.beast.ac}</p>
+                            <p className="font-bold text-red-400">{payload.beast.name}</p>
+                            <p className="text-sm text-[var(--text-muted)]">{payload.beast.size}, {payload.beast.type}, {payload.beast.alignment}</p>
+                            <p className="text-sm text-[var(--text-secondary)] mt-2">HP: {payload.beast.hp}, AC: {payload.beast.ac}</p>
                             <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                         </div>
                     </div>
                 );
              case 'note_share':
-                return msg.payload.note && (
+                return payload.note && (
                     <div className="flex flex-col items-start">
                         <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-cyan-500 max-w-[85%] sm:max-w-[75%]">
                             <div className="flex items-center gap-2 mb-2">
                                 <BookIcon className="w-5 h-5 text-cyan-400" />
-                                <p className="font-bold text-cyan-300">{msg.payload.note.title}</p>
+                                <p className="font-bold text-cyan-300">{payload.note.title}</p>
                             </div>
-                            <p className="text-sm text-[var(--text-secondary)] italic">"{msg.payload.note.content}"</p>
+                            <p className="text-sm text-[var(--text-secondary)] italic">"{payload.note.content}"</p>
                             <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                         </div>
                     </div>
                 );
             case 'roll_share':
-                 return msg.payload.roll && (
+                 return payload.roll && (
                     <div className="flex flex-col items-start">
                         <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-violet-500 max-w-[85%] sm:max-w-[75%]">
                             <div className="flex justify-between items-start">
-                                <p className="font-bold text-violet-300">{msg.payload.roll.title}</p>
-                                <p className="text-2xl font-bold text-[var(--text-primary)]">{msg.payload.roll.total}</p>
+                                <p className="font-bold text-violet-300">{payload.roll.title}</p>
+                                <p className="text-2xl font-bold text-[var(--text-primary)]">{payload.roll.total}</p>
                             </div>
-                            <p className="text-sm text-[var(--text-muted)] font-mono mt-1">{msg.payload.roll.formula}</p>
+                            <p className="text-sm text-[var(--text-muted)] font-mono mt-1">{payload.roll.formula}</p>
                             <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                         </div>
                     </div>
                 );
             case 'timeline_event_share':
-                return msg.payload.event && (
+                return payload.event && (
                     <div className="flex flex-col items-start">
                         <div className="my-2 p-3 bg-[var(--bg-primary)]/50 rounded-lg border-l-4 border-yellow-500 max-w-[85%] sm:max-w-[75%]">
                             <div className="flex items-center gap-2 mb-2">
                                 <CalendarIcon className="w-5 h-5 text-yellow-400" />
-                                <p className="font-bold text-yellow-300">Timeline Event: Day {msg.payload.event.day}</p>
+                                <p className="font-bold text-yellow-300">Timeline Event: Day {payload.event.day}</p>
                             </div>
-                            <p className="text-sm text-[var(--text-secondary)] italic">"{msg.payload.event.description}"</p>
+                            <p className="text-sm text-[var(--text-secondary)] italic">"{payload.event.description}"</p>
                             <p className="text-xs text-[var(--text-muted)]/80 text-right mt-1">Shared by {msg.user}</p>
                         </div>
                     </div>
                 );
             case 'chat':
             default:
-                const isNpcMessage = msg.payload.asNPC;
+                const isNpcMessage = payload.asNPC;
                 if (isNpcMessage) {
                     return (
                         <div className="flex flex-col items-start">
@@ -254,14 +298,18 @@ const CampaignChat: React.FC<CampaignChatProps> = ({ activeCharacter, history })
                                     <p className="font-bold text-amber-300">{isNpcMessage.name}</p>
                                     <time className="text-[var(--text-muted)]">{time}</time>
                                 </div>
-                                <p className="whitespace-pre-wrap break-words">{msg.payload.message}</p>
+                                {payload.isFleeting ? (
+                                    <FleetingMessage message={payload.message || ''} timestamp={msg.timestamp} />
+                                ) : (
+                                    <p className="whitespace-pre-wrap break-words">{payload.message}</p>
+                                )}
                             </div>
                         </div>
                     );
                 }
 
                 const isCurrentUser = msg.user === activeCharacter.name;
-                const isOOCMessage = msg.payload.ooc;
+                const isOOCMessage = payload.ooc;
 
                 return (
                      <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
@@ -270,10 +318,12 @@ const CampaignChat: React.FC<CampaignChatProps> = ({ activeCharacter, history })
                                 <p className={`font-bold ${isCurrentUser ? 'text-[var(--accent-secondary)]' : 'text-[var(--accent-primary)]'}`}>{msg.user}</p>
                                 <time className="text-[var(--text-muted)]">{time}</time>
                             </div>
-                            {isOOCMessage ? (
-                                <p className="whitespace-pre-wrap break-words text-[var(--text-muted)] italic"><span className="font-bold not-italic mr-1">(OOC)</span>{msg.payload.message}</p>
+                            {payload.isFleeting ? (
+                                <FleetingMessage message={payload.message || ''} timestamp={msg.timestamp} />
+                            ) : isOOCMessage ? (
+                                <p className="whitespace-pre-wrap break-words text-[var(--text-muted)] italic"><span className="font-bold not-italic mr-1">(OOC)</span>{payload.message}</p>
                             ) : (
-                                <p className="whitespace-pre-wrap break-words">{msg.payload.message}</p>
+                                <p className="whitespace-pre-wrap break-words">{payload.message}</p>
                             )}
                         </div>
                     </div>
@@ -319,7 +369,7 @@ const CampaignChat: React.FC<CampaignChatProps> = ({ activeCharacter, history })
             </header>
 
             <div className="flex-grow p-4 overflow-y-auto space-y-4 min-h-0">
-                {messages.map((msg) => (
+                {messages.slice(-10).map((msg) => (
                     <div key={msg.id}>
                         {renderMessage(msg)}
                     </div>

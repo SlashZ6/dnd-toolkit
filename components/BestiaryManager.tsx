@@ -1,4 +1,6 @@
 
+
+
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { Monster, MonsterTrait, createEmptyMonster } from '../types';
@@ -9,6 +11,7 @@ import { MonsterIcon } from './icons/MonsterIcon';
 import { TrashIcon } from './icons/TrashIcon';
 import SmartText from './ui/SmartText';
 import { useToast } from './ui/Toast';
+import { CrownIcon } from './icons/CrownIcon';
 
 // --- CONSTANTS ---
 const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"];
@@ -31,6 +34,7 @@ interface BestiaryManagerProps {
     deleteMonster: (id: string) => Promise<void>;
     isLoading: boolean;
     focusId?: string | null;
+    onSpotlight?: (data: { title: string, subtitle?: string, description?: string, image?: string }) => void;
 }
 
 const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & {label: string}> = ({label, ...props}) => (
@@ -113,7 +117,24 @@ const StatBlockDivider = () => (
     <div className="border-b-2 border-red-500/50 my-3"></div>
 );
 
-const MonsterView: React.FC<{ monster: Monster; onEdit: () => void; onBack: () => void; }> = ({ monster, onEdit, onBack }) => {
+const MonsterView: React.FC<{ 
+    monster: Monster; 
+    onEdit: () => void; 
+    onBack: () => void; 
+    onSpotlight?: (data: any) => void 
+}> = ({ monster, onEdit, onBack, onSpotlight }) => {
+
+    const handleShare = () => {
+        if (onSpotlight) {
+            onSpotlight({
+                title: monster.name,
+                subtitle: `${monster.size} ${monster.type}`,
+                description: `HP: ${monster.hp}, AC: ${monster.ac}`,
+                image: monster.image
+            });
+        }
+    };
+
     return (
         <div className="animate-fade-in space-y-6">
             <header className="flex justify-between items-center">
@@ -121,7 +142,14 @@ const MonsterView: React.FC<{ monster: Monster; onEdit: () => void; onBack: () =
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
                     Back to Bestiary
                 </Button>
-                <Button onClick={onEdit}>Edit</Button>
+                 <div className="flex gap-2">
+                     {onSpotlight && (
+                        <Button onClick={handleShare} variant="ghost" className="text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/50">
+                            <CrownIcon className="w-4 h-4 mr-2" /> Show to Players
+                        </Button>
+                    )}
+                    <Button onClick={onEdit}>Edit</Button>
+                </div>
             </header>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-1">
@@ -344,7 +372,7 @@ const NewMonsterCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 
 // --- MAIN MANAGER COMPONENT ---
 
-const BestiaryManager: React.FC<BestiaryManagerProps> = ({ monsters, addMonster, updateMonster, deleteMonster, isLoading, focusId }) => {
+const BestiaryManager: React.FC<BestiaryManagerProps> = ({ monsters, addMonster, updateMonster, deleteMonster, isLoading, focusId, onSpotlight }) => {
     const [viewMode, setViewMode] = useState<'DASHBOARD' | 'VIEW' | 'FORM'>('DASHBOARD');
     const [activeMonster, setActiveMonster] = useState<Monster | null>(null);
     const [monsterToDelete, setMonsterToDelete] = useState<Monster | null>(null);
@@ -420,7 +448,7 @@ const BestiaryManager: React.FC<BestiaryManagerProps> = ({ monsters, addMonster,
     }
 
     if (viewMode === 'VIEW' && activeMonster) {
-        return <MonsterView monster={activeMonster} onEdit={handleEditMonster} onBack={handleBackFromView} />;
+        return <MonsterView monster={activeMonster} onEdit={handleEditMonster} onBack={handleBackFromView} onSpotlight={onSpotlight} />;
     }
 
     return (

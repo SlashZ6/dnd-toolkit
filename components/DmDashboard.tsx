@@ -460,11 +460,35 @@ const NameGenWidget: React.FC<{ data: any; onUpdate: (data: any) => void }> = ({
 
     const generate = () => {
         let name = '';
-        if (race === 'Elf') name = randomItem(GENERATORS.GENERATOR_NAME_ELF_PREFIX) + randomItem(GENERATORS.GENERATOR_NAME_ELF_SUFFIX);
-        else if (race === 'Dwarf') name = randomItem(GENERATORS.GENERATOR_NAME_DWARF_PREFIX) + randomItem(GENERATORS.GENERATOR_NAME_DWARF_SUFFIX);
-        else if (race === 'Orc') name = randomItem(GENERATORS.GENERATOR_NAME_ORC_PREFIX) + randomItem(GENERATORS.GENERATOR_NAME_ORC_SUFFIX);
-        else name = randomItem(GENERATORS.GENERATOR_NPC_FIRST_NAMES); // Human/Common
-        
+        const nameData = GENERATORS.GENERATOR_NAME_DATA;
+
+        if (race === 'Elf') {
+            name = randomItem(nameData.Elf.prefixes) + randomItem(nameData.Elf.suffixes);
+            if (Math.random() > 0.5) name += ' ' + randomItem(nameData.Elf.surnames);
+        } else if (race === 'Dwarf') {
+            name = randomItem(nameData.Dwarf.prefixes) + randomItem(nameData.Dwarf.suffixes);
+            if (Math.random() > 0.3) name += ' ' + randomItem(nameData.Dwarf.clanNames);
+        } else if (race === 'Orc') {
+            name = randomItem(nameData.Orc.prefixes) + randomItem(nameData.Orc.suffixes);
+            if (Math.random() > 0.7) name += ' ' + randomItem(nameData.Orc.epithets);
+        } else if (race === 'Human') {
+            name = randomItem(nameData.Human.firstNames) + ' ' + randomItem(nameData.Human.surnames);
+        } else if (race === 'Halfling') {
+             name = randomItem(nameData.Halfling.firstNames) + ' ' + randomItem(nameData.Halfling.surnames);
+        } else if (race === 'Gnome') {
+             name = randomItem(nameData.Gnome.firstNames) + ' "' + randomItem(nameData.Gnome.nicknames) + '" ' + randomItem(nameData.Gnome.clanNames);
+        } else if (race === 'Tiefling') {
+             if (Math.random() > 0.5) name = randomItem(nameData.Tiefling.virtueNames);
+             else name = randomItem(nameData.Tiefling.infernalNames);
+        } else if (race === 'Dragonborn') {
+             name = randomItem(nameData.Dragonborn.firstNames) + ' of Clan ' + randomItem(nameData.Dragonborn.clanNames);
+        }
+
+        // Capitalize first letter if it was simple prefix/suffix logic
+        if (!name.includes(' ')) {
+             name = name.charAt(0).toUpperCase() + name.slice(1);
+        }
+
         onUpdate({ ...data, lastGenerated: name, race });
     };
 
@@ -473,7 +497,7 @@ const NameGenWidget: React.FC<{ data: any; onUpdate: (data: any) => void }> = ({
             <div className="text-center bg-black/20 rounded-lg p-2 border border-white/5 flex-grow flex flex-col justify-center">
                 <p className="text-[9px] text-[var(--text-muted)] uppercase mb-1 tracking-widest font-bold opacity-50">Result</p>
                 <div 
-                    className="text-base font-bold text-[var(--text-primary)] break-all cursor-pointer hover:text-[var(--accent-primary)] transition-colors drop-shadow-sm select-all"
+                    className="text-base font-bold text-[var(--text-primary)] break-words cursor-pointer hover:text-[var(--accent-primary)] transition-colors drop-shadow-sm select-all"
                     onClick={() => navigator.clipboard.writeText(lastGenerated)}
                     title="Click to copy"
                 >
@@ -486,10 +510,7 @@ const NameGenWidget: React.FC<{ data: any; onUpdate: (data: any) => void }> = ({
                     onChange={e => onUpdate({...data, race: e.target.value})}
                     className="bg-black/20 border border-white/10 rounded px-2 py-1 text-xs flex-grow text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] cursor-pointer hover:bg-white/5"
                 >
-                    <option value="Elf">Elf</option>
-                    <option value="Dwarf">Dwarf</option>
-                    <option value="Orc">Orc</option>
-                    <option value="Human">Human</option>
+                    {Object.keys(GENERATORS.GENERATOR_NAME_DATA).map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
                 <button onClick={generate} className="bg-white/10 hover:bg-[var(--accent-primary)] hover:text-black text-[var(--text-primary)] px-3 py-1 rounded text-xs font-bold transition-colors uppercase tracking-wider">Roll</button>
             </div>

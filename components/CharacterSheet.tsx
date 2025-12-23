@@ -74,23 +74,25 @@ const HpTracker: React.FC<{ current: number; max: number; onUpdate?: (newHp: num
     return (
          <div className="flex items-center gap-3 text-left bg-[var(--bg-primary)]/80 p-3 rounded-lg border border-[var(--border-primary)]">
             <div className="text-red-400 flex-shrink-0 text-glow-red"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></div>
-            <div className="flex items-baseline gap-2">
-                {isReadOnly ? (
-                    <span className="w-16 text-2xl font-bold text-[var(--text-primary)] text-right">{current}</span>
-                ) : (
-                    <input 
-                        type="number"
-                        value={localHp}
-                        onChange={handleHpChange}
-                        onBlur={handleHpBlur}
-                        className="w-16 bg-transparent text-2xl font-bold text-[var(--text-primary)] text-right border-none focus:ring-0 p-0"
-                        aria-label="Current Hit Points"
-                    />
-                )}
-                <span className="text-[var(--text-muted)]">/</span>
-                <span className="text-2xl font-bold text-[var(--text-primary)]">{max}</span>
+            <div className="flex flex-col">
+                <div className="flex items-baseline gap-2">
+                    {isReadOnly ? (
+                        <span className="text-2xl font-bold text-[var(--text-primary)]">{current}</span>
+                    ) : (
+                        <input 
+                            type="number"
+                            value={localHp}
+                            onChange={handleHpChange}
+                            onBlur={handleHpBlur}
+                            className="w-12 bg-transparent text-2xl font-bold text-[var(--text-primary)] text-right border-none focus:ring-0 p-0"
+                            aria-label="Current Hit Points"
+                        />
+                    )}
+                    <span className="text-[var(--text-muted)]">/</span>
+                    <span className="text-2xl font-bold text-[var(--text-primary)]">{max}</span>
+                </div>
+                <span className="block text-xs text-[var(--text-muted)] uppercase tracking-wider">Hit Points</span>
             </div>
-            <span className="block text-xs text-[var(--text-muted)] uppercase tracking-wider self-end mb-1">Hit Points</span>
         </div>
     );
 };
@@ -350,8 +352,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
   };
 
   const TabButton: React.FC<{tabId: SheetSection, children: React.ReactNode, icon: React.ReactNode}> = ({tabId, children, icon}) => (
-      <button onClick={() => setActiveTab(tabId)} className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base font-medieval rounded-t-lg transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tabId ? 'bg-[var(--bg-secondary)]/80 border-amber-400 text-amber-300 shadow-[0_3px_12px_rgba(251,191,36,0.4)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-tertiary)]/50'}`}>
-          {icon} {children}
+      <button onClick={() => setActiveTab(tabId)} className={`flex items-center justify-center gap-2 w-full px-2 py-2 text-sm font-medieval rounded-t-lg transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tabId ? 'bg-[var(--bg-secondary)]/80 border-amber-400 text-amber-300 shadow-[0_3px_12px_rgba(251,191,36,0.4)] mb-[-2px] z-10' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-tertiary)]/50'}`}>
+          {icon} <span className="hidden sm:inline">{children}</span>
       </button>
   );
   
@@ -579,8 +581,8 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
 
             {/* --- RIGHT COLUMN --- */}
             <div className="lg:col-span-9">
-                <div className="border-b border-[var(--border-primary)] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-px">
+                <div className="border-b border-[var(--border-primary)]">
+                    <div className="flex items-center w-full">
                          {tabs.map((tabId, index) => (
                             <div
                                 key={tabId}
@@ -589,7 +591,7 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
                                 onDragEnter={() => dragOverItem.current = index}
                                 onDragEnd={handleDragSort}
                                 onDragOver={(e) => e.preventDefault()}
-                                className={!isReadOnly ? 'cursor-move' : ''}
+                                className={`flex-grow ${!isReadOnly ? 'cursor-move' : ''}`}
                             >
                                 <TabButton tabId={tabId} icon={tabConfig[tabId].icon}>
                                     {tabConfig[tabId].label}
@@ -742,6 +744,15 @@ const CharacterSheet: React.FC<CharacterSheetProps> = ({ character, onEdit, onDe
                 </div>
             </div>
         )}
+        <style>{`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
     </div>
   );
 };

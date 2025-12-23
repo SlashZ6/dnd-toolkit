@@ -49,6 +49,52 @@ const ResultCard: React.FC<{
     );
 };
 
+// --- Advanced Name Generator Logic ---
+const generateFantasyName = (race: string): { display: string, full: string } => {
+    let name = '';
+    
+    // We access the data using the imported constant
+    const data = ALL_GENERATORS.GENERATOR_NAME_DATA;
+
+    switch (race) {
+        case 'Elf':
+            name = randomItem(data.Elf.prefixes) + randomItem(data.Elf.suffixes);
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+            if (Math.random() > 0.5) name += ' ' + randomItem(data.Elf.surnames);
+            break;
+        case 'Dwarf':
+            name = randomItem(data.Dwarf.prefixes) + randomItem(data.Dwarf.suffixes);
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+            if (Math.random() > 0.3) name += ' ' + randomItem(data.Dwarf.clanNames);
+            break;
+        case 'Orc':
+            name = randomItem(data.Orc.prefixes) + randomItem(data.Orc.suffixes);
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+            if (Math.random() > 0.7) name += ' ' + randomItem(data.Orc.epithets);
+            break;
+        case 'Human':
+            name = randomItem(data.Human.firstNames) + ' ' + randomItem(data.Human.surnames);
+            break;
+        case 'Halfling':
+            name = randomItem(data.Halfling.firstNames) + ' ' + randomItem(data.Halfling.surnames);
+            break;
+        case 'Gnome':
+            name = randomItem(data.Gnome.firstNames) + ' "' + randomItem(data.Gnome.nicknames) + '" ' + randomItem(data.Gnome.clanNames);
+            break;
+        case 'Tiefling':
+            if (Math.random() > 0.5) name = randomItem(data.Tiefling.virtueNames);
+            else name = randomItem(data.Tiefling.infernalNames);
+            break;
+        case 'Dragonborn':
+            name = randomItem(data.Dragonborn.firstNames) + ' of Clan ' + randomItem(data.Dragonborn.clanNames);
+            break;
+        default:
+            name = "Unknown";
+    }
+
+    return { display: name, full: name };
+};
+
 
 const GeneratorManager: React.FC = () => {
     const [npc, setNpc] = useState<ResultState>(null);
@@ -57,6 +103,11 @@ const GeneratorManager: React.FC = () => {
     const [magicItem, setMagicItem] = useState<ResultState>(null);
     const [dungeon, setDungeon] = useState<ResultState>(null);
     const [fantasyName, setFantasyName] = useState<ResultState>(null);
+    const [settlement, setSettlement] = useState<ResultState>(null);
+    const [treasure, setTreasure] = useState<ResultState>(null);
+    const [rumor, setRumor] = useState<ResultState>(null);
+
+    const [selectedRace, setSelectedRace] = useState<string>('Elf');
     
     const generateNpc = useCallback(() => {
         const firstName = randomItem(ALL_GENERATORS.GENERATOR_NPC_FIRST_NAMES);
@@ -157,19 +208,60 @@ const GeneratorManager: React.FC = () => {
         });
     }, []);
 
-    const generateName = useCallback((race: 'Elf' | 'Dwarf' | 'Orc') => {
-        let name = '';
-        if (race === 'Elf') {
-            name = randomItem(ALL_GENERATORS.GENERATOR_NAME_ELF_PREFIX) + randomItem(ALL_GENERATORS.GENERATOR_NAME_ELF_SUFFIX);
-        } else if (race === 'Dwarf') {
-            name = randomItem(ALL_GENERATORS.GENERATOR_NAME_DWARF_PREFIX) + randomItem(ALL_GENERATORS.GENERATOR_NAME_DWARF_SUFFIX);
-        } else {
-            name = randomItem(ALL_GENERATORS.GENERATOR_NAME_ORC_PREFIX) + randomItem(ALL_GENERATORS.GENERATOR_NAME_ORC_SUFFIX);
-        }
-        
+    const generateName = useCallback(() => {
+        const result = generateFantasyName(selectedRace);
         setFantasyName({
-            jsx: <p className="font-bold text-2xl text-[var(--text-primary)] text-center pt-8">{name}</p>,
-            text: name
+            jsx: <p className="font-bold text-2xl text-[var(--text-primary)] text-center pt-8 break-words">{result.display}</p>,
+            text: result.full
+        });
+    }, [selectedRace]);
+
+    const generateSettlement = useCallback(() => {
+        const prefix = randomItem(ALL_GENERATORS.GENERATOR_CITY_PREFIX);
+        const suffix = randomItem(ALL_GENERATORS.GENERATOR_CITY_SUFFIX);
+        const name = prefix + suffix;
+        const quirk = randomItem(ALL_GENERATORS.GENERATOR_TAVERN_ATMOSPHERES); // Reuse atmosphere for now as vibe
+        
+        setSettlement({
+            jsx: (
+                <div className="space-y-1">
+                    <p className="font-bold text-lg text-[var(--text-primary)]">{name}</p>
+                    <p className="italic text-[var(--text-muted)]">A settlement that is {quirk}.</p>
+                </div>
+            ),
+            text: `${name} - A settlement that is {quirk}.`
+        });
+    }, []);
+
+    const generateTreasure = useCallback(() => {
+        const coins = randomItem(ALL_GENERATORS.GENERATOR_TREASURE_COINS);
+        const art = randomItem(ALL_GENERATORS.GENERATOR_TREASURE_ART);
+        const gems = randomItem(ALL_GENERATORS.GENERATOR_TREASURE_GEMS);
+        
+        setTreasure({
+            jsx: (
+                <ul className="space-y-1 list-disc list-inside text-sm">
+                    <li>{coins}</li>
+                    <li>{art}</li>
+                    <li>{gems}</li>
+                </ul>
+            ),
+            text: `Loot:\n- ${coins}\n- ${art}\n- ${gems}`
+        });
+    }, []);
+
+    const generateRumor = useCallback(() => {
+        const subject = randomItem(ALL_GENERATORS.GENERATOR_RUMOR_SUBJECTS);
+        const verb = randomItem(ALL_GENERATORS.GENERATOR_RUMOR_VERBS);
+        const location = randomItem(ALL_GENERATORS.GENERATOR_RUMOR_LOCATIONS);
+        
+        setRumor({
+            jsx: (
+                <p className="italic text-[var(--text-primary)]">
+                    "I heard that <strong className="text-[var(--accent-primary)]">{subject}</strong> {verb} {location}."
+                </p>
+            ),
+            text: `"I heard that ${subject} ${verb} ${location}."`
         });
     }, []);
 
@@ -180,19 +272,33 @@ const GeneratorManager: React.FC = () => {
                 <div className="w-32 h-1 mx-auto mt-2 bg-gradient-to-r from-transparent via-[var(--accent-primary)]/50 to-transparent"></div>
                 <p className="text-[var(--text-muted)] mt-4 text-lg">Instant inspiration for your campaign.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Row 1 */}
+                <ResultCard title="Fantasy Name Generator" result={fantasyName?.jsx} onGenerate={generateName} textToCopy={fantasyName?.text ?? null}>
+                    <div className="flex gap-2 justify-center">
+                        <select 
+                            value={selectedRace} 
+                            onChange={(e) => setSelectedRace(e.target.value)}
+                            className="bg-[var(--bg-primary)] border border-[var(--border-secondary)] rounded px-3 py-1.5 text-sm text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] w-full"
+                        >
+                            {Object.keys(ALL_GENERATORS.GENERATOR_NAME_DATA).map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                    </div>
+                </ResultCard>
+
                 <ResultCard title="NPC Generator" result={npc?.jsx} onGenerate={generateNpc} textToCopy={npc?.text ?? null} />
                 <ResultCard title="Tavern Generator" result={tavern?.jsx} onGenerate={generateTavern} textToCopy={tavern?.text ?? null} />
+                
+                {/* Row 2 */}
                 <ResultCard title="Plot Hook Generator" result={plotHook?.jsx} onGenerate={generatePlotHook} textToCopy={plotHook?.text ?? null} />
                 <ResultCard title="Magic Item Generator" result={magicItem?.jsx} onGenerate={generateMagicItem} textToCopy={magicItem?.text ?? null} />
                 <ResultCard title="Dungeon Generator" result={dungeon?.jsx} onGenerate={generateDungeon} textToCopy={dungeon?.text ?? null} />
-                <ResultCard title="Fantasy Name Generator" result={fantasyName?.jsx} onGenerate={() => generateName('Elf')} textToCopy={fantasyName?.text ?? null}>
-                    <div className="flex gap-2 justify-center">
-                        <Button onClick={() => generateName('Elf')} variant="ghost" size="sm">Elf</Button>
-                        <Button onClick={() => generateName('Dwarf')} variant="ghost" size="sm">Dwarf</Button>
-                        <Button onClick={() => generateName('Orc')} variant="ghost" size="sm">Orc</Button>
-                    </div>
-                </ResultCard>
+                
+                {/* Row 3 (New) */}
+                <ResultCard title="Settlement Name Generator" result={settlement?.jsx} onGenerate={generateSettlement} textToCopy={settlement?.text ?? null} />
+                <ResultCard title="Treasure Hoard Generator" result={treasure?.jsx} onGenerate={generateTreasure} textToCopy={treasure?.text ?? null} />
+                <ResultCard title="Rumor Mill" result={rumor?.jsx} onGenerate={generateRumor} textToCopy={rumor?.text ?? null} />
             </div>
         </div>
     );

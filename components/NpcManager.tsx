@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect } from 'react';
 import { NPC, createEmptyNPC } from '../types';
 import Button from './ui/Button';
@@ -9,6 +11,7 @@ import { TrashIcon } from './icons/TrashIcon';
 import { UserCircleIcon } from './icons/UserCircleIcon';
 import SmartText from './ui/SmartText';
 import { useToast } from './ui/Toast';
+import { CrownIcon } from './icons/CrownIcon';
 
 // --- HELPER COMPONENTS ---
 
@@ -19,6 +22,7 @@ interface NpcManagerProps {
     deleteNpc: (id: string) => Promise<void>;
     isLoading: boolean;
     focusId?: string | null;
+    onSpotlight?: (data: { title: string, subtitle?: string, description?: string, image?: string }) => void;
 }
 
 const ALIGNMENTS = [
@@ -78,7 +82,24 @@ const AbilityScoreDisplay: React.FC<{ label: string; score: number }> = ({ label
     </div>
 );
 
-const NpcView: React.FC<{ npc: NPC; onEdit: () => void; onBack: () => void; }> = ({ npc, onEdit, onBack }) => {
+const NpcView: React.FC<{ 
+    npc: NPC; 
+    onEdit: () => void; 
+    onBack: () => void; 
+    onSpotlight?: (data: any) => void 
+}> = ({ npc, onEdit, onBack, onSpotlight }) => {
+    
+    const handleShare = () => {
+        if (onSpotlight) {
+            onSpotlight({
+                title: npc.name,
+                subtitle: `${npc.race} ${npc.classRole}`,
+                description: npc.backstorySummary || "No description provided.",
+                image: npc.image
+            });
+        }
+    };
+
     return (
         <div className="animate-fade-in space-y-6">
             <header className="flex justify-between items-center">
@@ -86,7 +107,14 @@ const NpcView: React.FC<{ npc: NPC; onEdit: () => void; onBack: () => void; }> =
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
                     Back to All NPCs
                 </Button>
-                <Button onClick={onEdit}>Edit</Button>
+                <div className="flex gap-2">
+                     {onSpotlight && (
+                        <Button onClick={handleShare} variant="ghost" className="text-[var(--accent-primary)] hover:bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/50">
+                            <CrownIcon className="w-4 h-4 mr-2" /> Show to Players
+                        </Button>
+                    )}
+                    <Button onClick={onEdit}>Edit</Button>
+                </div>
             </header>
             <div className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -287,7 +315,7 @@ const NewNpcCard: React.FC<{ onClick: () => void }> = ({ onClick }) => (
 
 // --- MAIN MANAGER COMPONENT ---
 
-const NpcManager: React.FC<NpcManagerProps> = ({ npcs, addNpc, updateNpc, deleteNpc, isLoading, focusId }) => {
+const NpcManager: React.FC<NpcManagerProps> = ({ npcs, addNpc, updateNpc, deleteNpc, isLoading, focusId, onSpotlight }) => {
     const [viewMode, setViewMode] = useState<'DASHBOARD' | 'VIEW' | 'FORM'>('DASHBOARD');
     const [activeNpc, setActiveNpc] = useState<NPC | null>(null);
     const [npcToDelete, setNpcToDelete] = useState<NPC | null>(null);
@@ -363,7 +391,7 @@ const NpcManager: React.FC<NpcManagerProps> = ({ npcs, addNpc, updateNpc, delete
     }
 
     if (viewMode === 'VIEW' && activeNpc) {
-        return <NpcView npc={activeNpc} onEdit={handleEditNpc} onBack={handleBackFromView} />;
+        return <NpcView npc={activeNpc} onEdit={handleEditNpc} onBack={handleBackFromView} onSpotlight={onSpotlight} />;
     }
 
     return (

@@ -266,7 +266,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
               .map(f => {
                   let featureUses: Feature['uses'] | undefined = undefined;
                   if (f.uses) {
-                      const max = resolveUses(f.uses.max);
+                      const max = resolveUses(f.uses.max as any);
                       // On level up, we should preserve current uses if possible, but for simplicity here we reset.
                       featureUses = { max, current: max };
                   }
@@ -488,7 +488,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
   };
   
   const TabButton: React.FC<{tabId: Tab, children: React.ReactNode}> = ({tabId, children}) => (
-      <button type="button" onClick={() => setActiveTab(tabId)} className={`px-3 sm:px-4 py-2 text-base sm:text-lg font-medieval rounded-t-lg transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tabId ? 'bg-[var(--bg-secondary)] border-[var(--border-accent-primary)] text-[var(--accent-primary)] shadow-[0_2px_10px_var(--glow-primary)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50'}`}>
+      <button type="button" onClick={() => setActiveTab(tabId)} className={`flex-grow justify-center text-center px-2 py-2 text-xs sm:text-sm font-medieval rounded-t-lg transition-all duration-200 border-b-2 whitespace-nowrap ${activeTab === tabId ? 'bg-[var(--bg-secondary)] border-[var(--border-accent-primary)] text-[var(--accent-primary)] shadow-[0_2px_10px_var(--glow-primary)]' : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]/50'}`}>
           {children}
       </button>
   );
@@ -502,7 +502,7 @@ const CharacterForm: React.FC<CharacterFormProps> = ({ character, onSave, onCanc
         </header>
 
         <div className="border-b border-[var(--border-primary)]">
-            <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-px">
+            <div className="flex w-full items-center pb-px">
                 <TabButton tabId="identity">Identity</TabButton>
                 <TabButton tabId="stats">Stats & Skills</TabButton>
                 <TabButton tabId="features">Features</TabButton>
