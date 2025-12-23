@@ -1,5 +1,7 @@
 
 // Generator Content
+
+// --- NPC GENERATOR ---
 export const GENERATOR_NPC_FIRST_NAMES: ReadonlyArray<string> = [
     'Aelar', 'Aeron', 'Aldric', 'Alaric', 'Anduin', 'Arion', 'Baelor', 'Balen', 'Brand', 'Bran',
     'Caelan', 'Caspian', 'Corbin', 'Darian', 'Daron', 'Davian', 'Draven', 'Einar', 'Elara', 'Eldrin',
@@ -15,8 +17,16 @@ export const GENERATOR_NPC_FIRST_NAMES: ReadonlyArray<string> = [
     'Kael', 'Jax', 'Zane', 'Anya', 'Cora', 'Finn', 'Kai', 'Milo', 'Nico', 'Remi', 'Rowan', 'Theo', 'Aden',
     'Bram', 'Cian', 'Dell', 'Erik', 'Giles', 'Heath', 'Jude', 'Leon', 'Max', 'Owen', 'Rhys', 'Seth', 'Tate',
     'Vaughn', 'Wes', 'Abel', 'Alec', 'Blaine', 'Cole', 'Dean', 'Evan', 'Flynn', 'Grant', 'Hayes', 'Ian', 'Joel',
-    'Keith', 'Lane', 'Miles', 'Neil', 'Paul', 'Quincy', 'Reed', 'Shane', 'Troy', 'Vince', 'Wyatt', 'Zeke'
+    'Keith', 'Lane', 'Miles', 'Neil', 'Paul', 'Quincy', 'Reed', 'Shane', 'Troy', 'Vince', 'Wyatt', 'Zeke',
+    'Adric', 'Althea', 'Anson', 'Arin', 'Barden', 'Beryl', 'Cade', 'Calla', 'Cedric', 'Dalia', 'Dante', 'Elian',
+    'Emrys', 'Elowen', 'Faora', 'Galen', 'Halia', 'Iden', 'Kaelen', 'Liora', 'Marek', 'Nevin', 'Oryn', 'Pavel',
+    'Quinton', 'Rian', 'Sariel', 'Talia', 'Uriel', 'Valen', 'Willem', 'Xavi', 'Yara', 'Zarek', 'Elias', 'Tobias',
+    'Silas', 'Barnaby', 'Rupert', 'Cecil', 'Arthur', 'Edgar', 'Percival', 'Leopold', 'Archibald', 'Thaddeus',
+    'Cornelius', 'Ignatius', 'Horatio', 'Ferdinand', 'Augustus', 'Reginald', 'Benedict', 'Cyprian', 'Dorian',
+    'Eamon', 'Fintan', 'Gulliver', 'Hamish', 'Ishmael', 'Jesper', 'Killian', 'Lazlo', 'Malachi', 'Neville',
+    'Oberon', 'Phineas', 'Quentin', 'Rafferty', 'Simeon', 'Theobald', 'Ulysses', 'Valentine', 'Wilfred', 'Xavier'
 ];
+
 export const GENERATOR_NPC_LAST_NAMES: ReadonlyArray<string> = [
     'Ashworth', 'Blackwood', 'Brighton', 'Briarwood', 'Brook', 'Burke', 'Cartwright', 'Chandler', 'Crestwood', 'Crow',
     'Dawson', 'Drake', 'Dunne', 'Evergreen', 'Fairchild', 'Fletcher', 'Frost', 'Gable', 'Gray', 'Grimm',
@@ -28,8 +38,17 @@ export const GENERATOR_NPC_LAST_NAMES: ReadonlyArray<string> = [
     'Blackwater', 'Firehand', 'Goldcrest', 'Ironfoot', 'Moonshadow', 'Nightwind', 'Shadowalker', 'Stonemason', 'Swiftwater', 'Whisperwind',
     'Brightsun', 'Coppervein', 'Deepwood', 'Evenfall', 'Highcliff', 'Lightfoot', 'Riverbend', 'Sunstrider', 'Thornfield', 'Windrunner',
     'Stonefist', 'Greymane', 'Bloodsworn', 'Darkwater', 'Sunfire', 'Winterborn', 'Lightbringer', 'Shadowend', 'Ironwill', 'Stormcaller',
-    'Frostbeard', 'Oakenfold', 'Willowisp', 'Starfall', 'Nightbreeze', 'Silverstream', 'Goldleaf', 'Runeweaver', 'Spellbinder', 'Soulforge'
+    'Frostbeard', 'Oakenfold', 'Willowisp', 'Starfall', 'Nightbreeze', 'Silverstream', 'Goldleaf', 'Runeweaver', 'Spellbinder', 'Soulforge',
+    'Amberhill', 'Barleycorn', 'Barrow', 'Bonebreaker', 'Cliffguard', 'Crowfeather', 'Darkmoor', 'Dewdrop', 'Emberforge', 'Featherfoot',
+    'Flint', 'Gloomstalker', 'Hammersmith', 'Icewind', 'Ironbound', 'Kingsbane', 'Longstrider', 'Mosswood', 'Netherridge', 'Oxbow',
+    'Pineheart', 'Quickstep', 'Rainwater', 'Redshield', 'Sagebrush', 'Stormborn', 'Timberwolf', 'Underhill', 'Valewalker', 'Whitewater',
+    'Appleton', 'Baker', 'Brewer', 'Carpenter', 'Cook', 'Fisher', 'Gardener', 'Hunter', 'Miller', 'Potter',
+    'Sawyer', 'Shepherd', 'Smith', 'Tailor', 'Tanner', 'Weaver', 'Wright', 'Archer', 'Bailey', 'Baxter',
+    'Bennett', 'Boone', 'Bowman', 'Butcher', 'Carter', 'Chapman', 'Clark', 'Collier', 'Cooper', 'Dyer',
+    'Farmer', 'Faulkner', 'Foreman', 'Fuller', 'Glover', 'Harper', 'Hooper', 'Joyner', 'Kellogg', 'Knight',
+    'Mason', 'Mercer', 'Page', 'Palmer', 'Parker', 'Porter', 'Rolfe', 'Sadler', 'Sargent', 'Skinner'
 ];
+
 export const GENERATOR_NPC_APPEARANCE: ReadonlyArray<string> = [
     'has a long scar over one eye', 'wears a ridiculously large hat', 'is missing a finger', 'has a clockwork eye', 'is covered in tattoos',
     'wears mismatched boots', 'has brightly colored hair', 'always smells of ozone', 'has a nervous twitch', 'constantly polishes a small trinket',
@@ -47,8 +66,11 @@ export const GENERATOR_NPC_APPEARANCE: ReadonlyArray<string> = [
     'wears a single, black feather tucked behind their ear', 'has a network of fine, silver scars on their face', 'is always humming a strange, dissonant tune', 'wears armor cobbled together from scrap metal', 'has a piece of shrapnel embedded in their forehead',
     'wears a simple, homespun tunic with intricate embroidery', 'is always carrying a large, heavy book', 'has a warm, disarming smile', 'has a cold, unnerving stare', 'wears a circlet of twisted iron',
     'has runes carved into their fingernails', 'wears a live, tiny snake as a bracelet', 'is constantly surrounded by a swirl of dust motes', 'has a third eye tattooed on their forehead', 'is always seen with a cup of tea',
-    'has a perfectly symmetrical face, to an unsettling degree', 'wears a cloak that seems to absorb light', 'has a prosthetic made of crystal', 'is always accompanied by the smell of rain', 'has a piece of a map tattooed on their arm'
+    'has a perfectly symmetrical face, to an unsettling degree', 'wears a cloak that seems to absorb light', 'has a prosthetic made of crystal', 'is always accompanied by the smell of rain', 'has a piece of a map tattooed on their arm',
+    'walks with a heavy cane topped with a silver skull', 'has a nervous habit of adjusting their glasses', 'wears a locket that they constantly check', 'has a loud, booming sneeze', 'speaks in a whisper',
+    'has a collection of small bones woven into their hair', 'wears a belt with many pouches', 'has a distinctive birthmark shaped like a star', 'is always chewing on a pipe', 'has a pet raven that mimics their speech'
 ];
+
 export const GENERATOR_NPC_TRAITS: ReadonlyArray<string> = [
     'arrogant', 'brave', 'cowardly', 'deceitful', 'honorable', 'gullible', 'wise', 'foolish', 'kind', 'cruel',
     'lazy', 'diligent', 'optimistic', 'pessimistic', 'cynical', 'idealistic', 'pragmatic', 'romantic', 'adventurous', 'cautious',
@@ -62,6 +84,7 @@ export const GENERATOR_NPC_TRAITS: ReadonlyArray<string> = [
     'jovial', 'irritable', 'philosophical', 'materialistic', 'spiritual', 'worldly', 'resilient', 'fragile', 'observant', 'oblivious',
     'melancholy', 'jaded', 'zealous', 'whimsical', 'stubborn', 'placid', 'vivacious', 'taciturn', 'pompous', 'self-deprecating'
 ];
+
 export const GENERATOR_NPC_MOTIVATIONS: ReadonlyArray<string> = [
     'to find a lost family member', 'to pay off a massive debt', 'to protect a dark secret', 'to achieve immortality', 'to find a cure for a disease',
     'to gain political power', 'to avenge a fallen comrade', 'to prove their worth to their family', 'to discover a hidden truth', 'to serve their patron',
@@ -77,8 +100,12 @@ export const GENERATOR_NPC_MOTIVATIONS: ReadonlyArray<string> = [
     'to start a revolution', 'to find a way to bring someone back from the dead', 'to become a legend', 'to erase their own existence from history', 'to find a perfect, logical system for society',
     'to experience every pleasure the world has to offer', 'to find and defeat a worthy opponent', 'to protect a powerful, dangerous item', 'to find a new home for their displaced people', 'to achieve a state of perfect enlightenment',
     'to prove that magic is a curse', 'to prove that technology is the future', 'to find a way to control minds', 'to create a perfect, utopian society', 'to unleash a terrible monster upon the world',
-    'to find the answer to a riddle they heard years ago', 'to find meaning in a meaningless world', 'to collect a rare and beautiful object', 'to find a way to fly', 'to prove that their controversial theories are correct'
+    'to find the answer to a riddle they heard years ago', 'to find meaning in a meaningless world', 'to collect a rare and beautiful object', 'to find a way to fly', 'to prove that their controversial theories are correct',
+    'to recover a stolen heirloom', 'to clear their name of a crime they didn\'t commit', 'to protect a wilderness area from civilization', 'to find a cure for a magical plague', 'to establish a trade route to a distant land',
+    'to found a new religion', 'to discover the origin of their strange powers', 'to reunite two warring factions', 'to win a prestigious competition', 'to create a sanctuary for outcasts'
 ];
+
+// --- TAVERN GENERATOR ---
 export const GENERATOR_TAVERN_ADJECTIVES: ReadonlyArray<string> = [
     'The Laughing', 'The Drunken', 'The Gilded', 'The Sleeping', 'The Howling', 'The Salty', 'The Broken', 'The Crimson', 'The Golden', 'The Silver',
     'The Black', 'The White', 'The Green', 'The Lonely', 'The Whispering', 'The Singing', 'The Prancing', 'The Leaky', 'The Stumbling', 'The Grinning',
@@ -92,6 +119,7 @@ export const GENERATOR_TAVERN_ADJECTIVES: ReadonlyArray<string> = [
     'The Final', 'The Weary', 'The First', 'The Fading', 'The New', 'The Old', 'The Ancient', 'The Forgotten', 'The Remembered', 'The Lost',
     'The Glimmering', 'The Murky', 'The Creaking', 'The Jolly', 'The Weary', 'The Wandering', 'The Sunken', 'The Soaring', 'The Dreaming', 'The Foolish'
 ];
+
 export const GENERATOR_TAVERN_NOUNS: ReadonlyArray<string> = [
     'Goblin', 'Dragon', 'Griffin', 'Pony', 'Flagon', 'Mug', 'Kettle', 'Shield', 'Sword', 'Axe',
     'Hammer', 'Spear', 'Bow', 'Arrow', 'Helm', 'Boot', 'Gauntlet', 'Plate', 'Chain', 'Leather',
@@ -103,124 +131,236 @@ export const GENERATOR_TAVERN_NOUNS: ReadonlyArray<string> = [
     'Throne', 'Castle', 'Tower', 'Keep', 'Fort', 'Gate', 'Wall', 'Bridge', 'Road', 'Path',
     'River', 'Lake', 'Sea', 'Ocean', 'Mountain', 'Hill', 'Valley', 'Forest', 'Wood', 'Grove',
     'Meadow', 'Field', 'Plain', 'Swamp', 'Marsh', 'Bog', 'Fen', 'Desert', 'Wasteland', 'Tundra',
-    'Anchor', 'Sail', 'Mast', 'Rudder', 'Oar', 'Compass', 'Spyglass', 'Quill', 'Scroll', 'Tome', 'Chalice', 'Coin'
+    'Anchor', 'Sail', 'Mast', 'Rudder', 'Oar', 'Compass', 'Spyglass', 'Quill', 'Scroll', 'Tome', 'Chalice', 'Coin',
+    'Manticore', 'Wyvern', 'Beholder', 'Ogre', 'Giant', 'Troll', 'Hag', 'Witch', 'Wizard', 'Sorcerer',
+    'Knight', 'Paladin', 'Rogue', 'Bard', 'Cleric', 'Monk', 'Druid', 'Ranger', 'Barbarian', 'Fighter',
+    'Merchant', 'Blacksmith', 'Baker', 'Butcher', 'Candlestick', 'Maker', 'Tailor', 'Cobbler', 'Weaver', 'Potter',
+    'Unicorn', 'Pegasus', 'Chimera', 'Hydra', 'Kraken', 'Leviathan', 'Phoenix', 'Sphinx', 'Cyclops', 'Minotaur'
 ];
+
 export const GENERATOR_TAVERN_ATMOSPHERES: ReadonlyArray<string> = [
     'warm and inviting', 'dark and dangerous', 'loud and boisterous', 'quiet and contemplative', 'smoky and mysterious', 'bright and cheerful', 'dingy and cheap', 'opulent and exclusive', 'cozy and rustic', 'chaotic and crowded',
     'nearly empty and silent', 'filled with the sound of beautiful music', 'a place for clandestine meetings', 'frequented by city guards', 'a known haunt for thieves', 'run by a retired adventurer', 'rumored to be haunted', 'a front for a secret organization', 'famous for its terrible ale', 'known for its legendary dwarven spirits',
     'a place where nobles and commoners mingle', 'strictly for a certain race or class', 'a hub for local gossip', 'a place to hire mercenaries', 'filled with the smell of pipe smoke and fine wine', 'smelling of stale beer and regret', 'decorated with trophies from monster hunts', 'a place where brawls are a nightly occurrence', 'uncomfortably clean and sterile', 'a cozy haven for weary travelers',
-    'run by a family with too many children', 'a place where your secrets are never safe', 'a place where everyone seems to know your name', 'a place that feels like it exists out of time', 'lit by magical, floating lanterns', 'a place with a strict "no weapons" policy', 'a place where exotic beasts are welcome', 'a place built inside a massive, hollowed-out tree', 'a tavern that is also a library', 'a place with a large, roaring fire in the hearth',
-    'a place where the bartender knows everything', 'a place where no one asks any questions', 'a place that serves food from a far-off land', 'a place where a local hero is always drinking', 'a place where games of chance are played in the back room', 'a place that seems to change its layout every time you visit', 'a place with a talking animal as a mascot', 'a place where the floor is covered in sawdust', 'a place where political dissidents gather', 'a place that feels like home',
-    'a tavern built on a bridge over a river', 'a floating tavern on a lake', 'a tavern carved into the side of a mountain', 'a place where the drinks are mixed with minor magical potions', 'a tavern that is also a temple to a lord of revelry', 'a place with a "no magic" field inside', 'a tavern run by non-humanoids (e.g., goblins, kobolds)', 'a place where every patron has a story to tell', 'a tavern that only appears on a full moon', 'a place that is much, much larger on the inside',
-    'a tavern with a strict "no adventurers" rule', 'a place where illusions entertain the patrons', 'a tavern that is also a black market', 'a place where sailors share wild tales', 'a place run by a stern but fair matron'
+    'run by a family with too many children', 'a place where your secrets are never safe', 'a place where everyone seems to know your name', 'a place that feels like it exists out of time', 'lit by magical, floating lanterns', 'a place with a strict "no weapons" policy', 'a place where exotic beasts are welcome', 'a place built inside a massive, hollowed-out tree', 'a tavern that is also a library', 'a place with a large, roaring fire in the hearth'
 ];
+
 export const GENERATOR_TAVERN_QUIRKS: ReadonlyArray<string> = [
     'the bartender is a friendly goblin', 'all drinks are served in skulls', 'a ghost sits at the same table every night', 'the owner has a pet mimic', 'the prices change based on the weather',
     'patrons are required to leave a story in a book', 'the tavern has a strict no-singing rule', 'a local bard plays here, but is terrible', 'the stew is rumored to contain "mystery meat"', 'the tavern is a neutral ground for rival guilds',
     'all the staff are war veterans', 'a magical portrait on the wall insults the patrons', 'the tavern is run by a retired, and very bored, dragon', 'the tables are enchanted to never tip over', 'every drink comes with a riddle',
     'the building is slowly sinking into the swamp', 'the owner is convinced a patron is a disguised noble', 'the tavern has a secret fighting pit in the basement', 'a talking sword is mounted above the bar', 'the tavern only accepts payment in the form of favors',
     'the place is run by a coven of friendly witches', 'a magical spring in the cellar provides endless, clean water', 'the tavern is a well-known sanctuary for those on the run', 'the owner is a collector of rare and dangerous artifacts', 'the ceiling is covered in a glowing star map that actually moves',
-    'a powerful wizard lost a bet and now has to wash dishes here forever', 'the ale is brewed by monks from a nearby monastery', 'the bouncer is an animated suit of armor', 'all the chairs are slightly different, uncomfortable heights', 'the tavern has a "pet of the week" contest',
-    'the floorboards creak out a simple tune when walked upon', 'the owner is a doppelganger, but a very nice one', 'the tavern was once the site of a famous, history-changing duel', 'a strange plant grows in the corner and occasionally whispers secrets', 'the owner is trying to train a group of kobolds to be waiters',
-    'patrons can pay for their drinks by arm-wrestling the half-orc owner', 'the tavern has a "truth circle" where you can only speak the truth', 'a cursed item is hidden somewhere in the building', 'the tavern is built around a captured and very grumpy djinn', 'the roof is made of glass to watch the stars',
-    'the owner\'s spouse is a medusa, who is very careful about making eye contact', 'the tavern has a portal to a random plane in the privy', 'all the food is magically enchanted to be the most delicious thing you\'ve ever tasted', 'the tavern has a house band made up of skeletons', 'the owner is a pacifist and has a system for resolving conflicts without violence',
-    'the tavern is built in a magically created zone of silence', 'the owner communicates entirely through sign language', 'the tavern is located in an impossible place', 'a rare, magical flower blooms on one of the tables once a year', 'the tavern is a front for a secret library of forbidden texts'
+    'the furniture rearranges itself when no one is looking', 'the ale changes flavor depending on the drinker\'s mood', 'a spectral cat wanders the common room', 'the fireplace fire never needs fuel', 'the tavern exists in two places at once',
+    'the stairs creak in a melody when walked upon', 'a silent monk meditates in the corner at all times', 'the windows show a different landscape than what is outside', 'the menu is written in a forgotten language', 'the floor is made of glass, revealing a dungeon below'
 ];
+
+// --- PLOT HOOK GENERATOR ---
 export const GENERATOR_PLOT_PATRONS: ReadonlyArray<string> = [
     'a desperate farmer', 'a worried mother', 'a shifty merchant', 'a grizzled old soldier', 'a young noble in disguise',
     'a mysterious cloaked figure', 'a ghost with unfinished business', 'a charismatic cult leader', 'a pragmatic guild master', 'a senile old wizard',
     'a city guard captain', 'a child who saw something they shouldn\'t have', 'a disgraced knight', 'a flamboyant bard', 'a retired assassin',
     'a secret agent for the crown', 'a talking animal', 'a powerful archmage', 'a desperate goblin chieftain', 'a rich collector of oddities',
-    'a priest whose temple was desecrated', 'a scholar who has translated a cryptic text', 'a smuggler who lost a valuable cargo', 'a spy who has been discovered', 'a member of the royal family',
-    'a sentient magic item', 'a dream entity', 'a historian seeking a lost piece of history', 'a hunter whose village is being terrorized', 'a cursed individual seeking to break the curse',
-    'a doppelganger who wants to escape its life', 'a friendly monster', 'an alchemist who needs a rare ingredient', 'a cartographer who wants a map of a dangerous place', 'a prisoner who needs to be broken out of jail',
-    'a rival adventurer who needs help', 'a celestial being in mortal form', 'a fiend offering a tempting contract', 'a dragon who has lost its egg', 'a concerned innkeeper',
-    'a politician looking to frame a rival', 'a ranger who has discovered a great evil in the woods', 'a jeweler whose prized gem has been stolen', 'a ship captain whose crew has mutinied', 'a hermit who has foreseen a great disaster',
-    'a secret society that needs a task done anonymously', 'a powerful lich who is surprisingly polite', 'a fey creature playing a game', 'a time traveler who needs to correct a mistake', 'a member of the party\'s own family',
-    'a chef looking for a rare spice', 'a sentient plant', 'a mad artist', 'a collector of exotic pets', 'a being from another dimension', 'a lord in disguise'
+    'a vengeful spirit', 'a lost traveler', 'a charming rogue', 'a strict magistrate', 'a humble priest',
+    'a paranoid alchemist', 'a bored deity', 'a sentient magic item', 'a reformed villain', 'a time traveler'
 ];
+
 export const GENERATOR_PLOT_ACTIONS: ReadonlyArray<string> = [
     'retrieve', 'destroy', 'steal', 'protect', 'escort', 'assassinate', 'investigate', 'discover the true nature of', 'map', 'clear out',
     'sabotage', 'infiltrate', 'smuggle', 'guard', 'rescue', 'explore', 'survive', 'close a portal to', 'perform a ritual at', 'uncover a conspiracy involving',
-    'negotiate a treaty with', 'defend', 'hunt down', 'capture', 'deceive', 'expose', 'plant evidence in', 'find a weakness in', 'awaken', 'put to sleep',
-    'cleanse', 'corrupt', 'build', 'dismantle', 'activate', 'deactivate', 'win a competition at', 'impress', 'humiliate', 'frame',
-    'find the lost heir of', 'translate', 'decipher', 'forge', 'replace', 'survive a journey through', 'bless', 'curse', 'hide', 'reveal',
-    'start a riot in', 'quell a riot in', 'establish a trade route to', 'sever a supply line to', 'unite the warring factions of', 'break a siege at', 'start a guild in', 'shut down a criminal operation in', 'collect a bounty on', 'find a cure for a plague in',
-    'decode a message from', 'win the trust of', 'betray', 'outsmart', 'survive an encounter with', 'tame', 'exorcise', 'sanctify'
+    'negotiate with', 'spy on', 'capture', 'defend', 'escort to safety', 'deliver a message to', 'find the source of', 'stop the ritual of',
+    'break the curse on', 'awaken', 'banish', 'summon', 'transmute', 'enchant', 'decode'
 ];
+
 export const GENERATOR_PLOT_MACGUFFINS: ReadonlyArray<string> = [
     'the Orb of a Thousand Eyes', 'the Lost Sword of the First King', 'a rare spell component', 'a kidnapped noble', 'a secret ledger', 'the heart of a mountain', 'a dragon\'s egg', 'a map to a hidden treasure', 'the blueprints for a war machine', 'a cursed painting',
     'a sentient jewel', 'a book of forbidden knowledge', 'the last seed of a magical tree', 'a vial of pure life essence', 'a powerful lich\'s phylactery', 'a stolen artifact', 'a political prisoner', 'a legendary monster', 'a fey-touched child', 'a magical instrument',
-    'a piece of a shattered prophecy', 'a key that opens any lock', 'a potion of immortality', 'a feather from an angel\'s wing', 'a scale from a world serpent', 'the deed to a castle', 'a powerful spell scroll', 'a crown of a long-dead empire', 'the only cure for a magical plague', 'a talking skull',
-    'a contract with a devil', 'the soul of a great hero', 'a shard of a fallen star', 'a cage containing a powerful elemental', 'a set of ancient armor', 'a lens that can see into the future', 'a goblin-made machine that predicts the weather', 'a clock that can stop time', 'a compass that points to what you desire most', 'the true name of a demon',
-    'a lost piece of music said to calm any beast', 'the petrified heart of a lord', 'a recipe for a legendary ale', 'a single, perfect flower that never wilts', 'a mirror that shows an alternate reality', 'the silent bells of a lost city', 'a ship that can sail on land', 'the whisper of a forgotten wind', 'a tear of a sun dragon', 'the shadow of a fey lord',
-    'the last bottle of a legendary wine', 'a child with a powerful magical ability', 'a fragment of a dead lord', 'a spell that can rewrite history', 'a key to a celestial prison', 'a book that writes itself', 'a map tattooed on a living person'
+    'the crown of a fallen kingdom', 'a letter that could start a war', 'the key to a planar gate', 'a potion of immortality', 'the true name of a demon',
+    'a shard of a dead god', 'a clockwork heart', 'a singing crystal', 'a box that must never be opened', 'the last breath of a dying star'
 ];
+
 export const GENERATOR_PLOT_LOCATIONS: ReadonlyArray<string> = [
     'the Sunken City of Y\'ha-nthlei', 'the Whispering Caves', 'the Dragon\'s Maw volcano', 'the ruins of Castle Blackwood', 'the heart of the Gloomwood Forest', 'the Floating Spire of the Archmage', 'a smuggler\'s den in the city sewers', 'the Grand Library of Alexandria', 'the Tomb of the Forgotten King', 'a bustling desert marketplace',
     'a frozen fortress in the northern wastes', 'a hidden monastery in the mountains', 'a Feywild glade', 'a Shadowfell crossing', 'a lich\'s secret laboratory', 'the bottom of a deep lake', 'a giant\'s castle in the clouds', 'a goblin warren', 'an abandoned dwarven mine', 'an elven treetop city',
-    'a corrupt noble\'s estate', 'a haunted battlefield', 'a thieves\' guild headquarters', 'a magical university', 'a celestial observatory', 'a cursed swamp', 'a moving labyrinth', 'a portal to another plane', 'a petrified forest', 'an island that only appears at night',
-    'the belly of a colossal beast', 'a city built on the back of a titan', 'a prison carved from a single block of obsidian', 'a market where memories are sold', 'a ship graveyard in the mist', 'the peak of the highest mountain', 'a temple dedicated to a lord of chaos', 'a forgotten catacomb beneath the city', 'a clockwork city run by automatons', 'the dream of a sleeping lord',
-    'a wizard\'s tower that is bigger on the inside', 'a village where no one can lie', 'a forest where the trees walk', 'a canyon of eternal echoes', 'a circus with a dark secret', 'a spa run by a hag', 'a bank with impenetrable vaults', 'a fighting arena', 'a royal court', 'a desolate lighthouse',
-    'a city of eternal night', 'a garden that grows emotions', 'a library of unsent letters', 'a city carved from a single gem', 'a theater where the plays are real events', 'a fortress on the edge of reality', 'a city where everyone is a different fantasy race'
+    'a haunted lighthouse', 'a labyrinth of mirrors', 'a city built on the back of a giant turtle', 'a temple dedicated to a forgotten god', 'a prison dimension',
+    'a graveyard of ships', 'a forest of crystal trees', 'a village where everyone is asleep', 'a tower that extends into the earth', 'a bazaar in the City of Brass'
 ];
+
 export const GENERATOR_PLOT_ANTAGONISTS: ReadonlyArray<string> = [
     'a powerful lich', 'a greedy dragon', 'a cunning goblin chieftain', 'a ruthless thieves\' guild', 'a charismatic cult leader', 'a corrupt noble', 'a rival adventuring party', 'a vengeful ghost', 'a horde of orcs', 'a coven of hags',
     'a powerful demon', 'a mad wizard', 'a colony of mind flayers', 'a vampire lord', 'a tribe of savage beastmen', 'a group of duergar slavers', 'a beholder crime boss', 'a legion of devils', 'a royal guard captain', 'a scheming archfey',
-    'a giant who terrorizes the local villages', 'a medusa who is turning people to stone', 'a doppelganger who has replaced a key political figure', 'a magical beast that has been driven mad', 'a group of assassins', 'a mercenary company', 'a group of pirates', 'a tribe of lizardfolk', 'a clan of kobolds with deadly traps', 'a powerful elemental',
-    'a guardian golem', 'a swarm of undead', 'a shadow organization', 'the city watch', 'a powerful kraken', 'a djinn who has been freed from its prison', 'a fallen angel', 'a powerful archdruid who believes civilization is a disease', 'a psionic entity', 'a group of yuan-ti purebloods',
-    'a chimera', 'a manticore', 'a hydra', 'a wyvern', 'a dragon turtle', 'a group of trolls', 'a clan of ogres', 'a tribe of giants', 'a group of harpies', 'a pack of werewolves',
-    'themselves, due to a curse or magical compulsion', 'a force of nature, like a blizzard or a volcano', 'a lord of destruction', 'a time-traveling assassin', 'a reality-warping entity',
-    'a sentient swarm of insects', 'a living spell', 'a guild of lawyers who use contracts to bind their foes', 'a pacifist who is trying to end all conflict by force', 'a fallen hero'
+    'a fallen angel', 'a sentient construct', 'a ancient mummy', 'a shape-shifting doppelganger', 'a corrupted druid',
+    'a warlord from another dimension', 'a hive mind of insects', 'a chaotic elemental', 'a cursed knight', 'a shadow dragon'
 ];
+
 export const GENERATOR_PLOT_TWISTS: ReadonlyArray<string> = [
     'the patron is the real villain', 'the macguffin is cursed', 'the antagonist is actually protecting the macguffin from the patron', 'the location is not what it seems', 'the action required has an unforeseen, terrible consequence',
     'the party has been working for the bad guys all along', 'the "helpless" victim is a powerful being in disguise', 'the macguffin is not an object, but a person', 'the antagonist is a misunderstood hero', 'the location is actually a living creature',
     'the party needs the antagonist\'s help to succeed', 'the macguffin has already been found by someone else', 'the patron has given the same quest to a rival party', 'the entire quest is a distraction from a much larger threat', 'completing the quest will fulfill a dark prophecy',
-    'the macguffin is a fake', 'the antagonist is a family member of one of the party members', 'the location is on a different plane of existence', 'the patron doesn\'t actually exist', 'the quest is a test from a powerful entity',
-    'the macguffin is intelligent and doesn\'t want to be retrieved', 'the antagonist is being controlled by a greater evil', 'the patron has no intention of paying the party', 'the "evil" being fought is the only thing holding back a greater evil', 'the quest was a dream',
-    'the macguffin is a baby version of the antagonist', 'the location is constantly moving', 'the patron is a future version of one of the party members', 'the antagonist is a past version of one of the party members', 'the macguffin is worthless, but the journey was the real reward (and there is no monetary reward)',
-    'the patron is a doppelganger', 'the party is in a time loop', 'the antagonist is already dead', 'the macguffin will transform one of the party members', 'the location is inside one of the party members\' minds',
-    'the patron is being blackmailed', 'the antagonist is the patron\'s child', 'the macguffin is the key to unleashing a terrible plague', 'the entire town is a massive illusion', 'the party was hired to fail',
-    'the antagonist is the only one who knows the truth about a great injustice', 'the macguffin will grant a wish, but with a terrible price', 'the location is protected by a powerful, benevolent creature', 'the patron has amnesia and doesn\'t remember why the quest is important', 'the antagonist is immortal and can only be defeated by a specific, hidden method',
-    'the macguffin is a piece of a larger, more powerful artifact', 'the antagonist is a manifestation of the party\'s fears', 'the quest is a magical test of character', 'the "monster" is a sick, scared animal', 'the "treasure" is a terrible secret that will change the world'
+    'the antagonist is the patron from the future', 'the macguffin is a fake', 'the location is trapped in a time loop', 'the patron is being controlled by the antagonist', 'the party was dead the whole time (just kidding, but maybe in a dream)'
 ];
-export const GENERATOR_ITEM_TYPES: ReadonlyArray<string> = ['Dagger', 'Amulet', 'Ring', 'Boots', 'Cloak', 'Orb', 'Wand', 'Brooch', 'Gloves', 'Hat', 'Quill', 'Lantern', 'Coin', 'Spyglass', 'Compass', 'Music Box', 'Monocle', 'Flask', 'Locket', 'Dice', 'Deck of Cards', 'Pipe', 'Tome', 'Chalice', 'Mask', 'Belt', 'Bracers'];
-export const GENERATOR_ITEM_PREFIXES: ReadonlyArray<string> = ['Glowing', 'Humming', 'Chipped', 'Ornate', 'Shadowy', 'Whispering', 'Smoldering', 'Frost-Kissed', 'Glimmering', 'Unsettling', 'Simple', 'Worn', 'Pulsing', 'Runic', 'Fey-Touched', 'Blessed', 'Cursed', 'Ancient', 'Clockwork', 'Soul-Bound'];
+
+// --- ITEM GENERATOR ---
+export const GENERATOR_ITEM_TYPES: ReadonlyArray<string> = ['Dagger', 'Amulet', 'Ring', 'Boots', 'Cloak', 'Orb', 'Wand', 'Brooch', 'Gloves', 'Hat', 'Quill', 'Lantern', 'Coin', 'Spyglass', 'Compass', 'Music Box', 'Monocle', 'Flask', 'Locket', 'Dice', 'Deck of Cards', 'Pipe', 'Tome', 'Chalice', 'Mask', 'Belt', 'Bracers', 'Staff', 'Rod', 'Shield', 'Helmet', 'Gauntlets', 'Greaves', 'Cape', 'Robe', 'Vest'];
+export const GENERATOR_ITEM_PREFIXES: ReadonlyArray<string> = ['Glowing', 'Humming', 'Chipped', 'Ornate', 'Shadowy', 'Whispering', 'Smoldering', 'Frost-Kissed', 'Glimmering', 'Unsettling', 'Simple', 'Worn', 'Pulsing', 'Runic', 'Fey-Touched', 'Blessed', 'Cursed', 'Ancient', 'Clockwork', 'Soul-Bound', 'Ethereal', 'Celestial', 'Infernal', 'Abyssal', 'Arcane', 'Divine', 'Primal', 'Psionic', 'Spectral', 'Void-Touched'];
 export const GENERATOR_ITEM_EFFECTS: ReadonlyArray<string> = [
     'emits dim light in a 5ft radius on command.', 'occasionally whispers compliments to the wearer.', 'always points towards the nearest source of fresh water.', 'allows the user to speak with squirrels, but only on Tuesdays.', 'can perfectly mimic the sound of a chicken.',
     'keeps the wearer pleasantly warm in cold weather.', 'purifies up to one gallon of water per day.', 'can tie any knot, but cannot untie them.', 'glows faintly in the presence of undead.', 'translates one word per hour into a random language.',
     'makes the wearer\'s voice sound slightly more heroic.', 'can clean any non-magical stain from clothing.', 'can chill or warm a drink.', 'hums a quiet, calming tune when held.', 'repels non-magical insects in a 5ft radius.',
-    'once per day, can create a single, harmless puff of colored smoke.', 'can record up to 1 minute of sound, which it can play back once.', 'slightly enhances the taste of any food it touches.', 'can mend a small tear in fabric.', 'never needs to be sharpened (if a blade) or cleaned (if not).',
-    'can be used to light or extinguish a candle from 5 feet away.', 'changes color based on the wearer\'s mood.', 'the bearer can always remember the name of anyone they have met.', 'can detect the presence of poison in a drink by changing temperature.', 'allows the user to flawlessly shuffle a deck of cards.',
-    'can create a small, harmless illusion for 1 minute.', 'can predict the weather for the next hour with 50% accuracy.', 'can make the wearer\'s hair grow an inch.', 'can make one piece of fruit ripen instantly.', 'can make a small object float an inch off the ground.'
+    'allows the user to float an inch off the ground.', 'changes color based on the wearer\'s mood.', 'makes food taste better.', 'protects the wearer from getting wet in the rain.', 'allows the user to see through smoke and fog.',
+    'grants advantage on history checks related to the item\'s origin.', 'can be used to send a short message to a specific person once per day.', 'makes the wearer appear slightly more attractive.', 'gives the wearer a sense of direction.', 'alerts the wearer to the presence of traps.'
 ];
 export const GENERATOR_ITEM_QUIRKS: ReadonlyArray<string> = [
     'It smells faintly of cinnamon.', 'It is always slightly warm to the touch.', 'It was once owned by a failed lich.', 'It is coveted by all kobolds who see it.', 'It has a tiny, almost unreadable inscription that says "Property of Dave".',
     'It weeps a single drop of salt water at dawn.', 'It is allergic to cats.', 'It occasionally makes the wearer feel a sense of intense déjà vu.', 'It was crafted by a blind artisan.', 'It is useless during a full moon.',
-    'It feels heavier than it should.', 'It makes a faint, sad violin sound when its owner is sad.', 'It is a key to a door that no longer exists.', 'It was a gift from a fey creature.', 'It has a small, trapped spirit inside that is mostly just bored.',
-    'It must be polished with snake oil once a week or it ceases to function.', 'It slowly repairs itself from any damage.', 'It is afraid of the dark.', 'It belonged to a famous hero, but for a very embarrassing purpose.', 'It brings minor good luck, like finding a copper piece on the ground.',
-    'It only works if you speak to it politely.', 'It was stolen from a dragon\'s hoard.', 'It has a small, indecipherable map etched onto its surface.', 'It is a well-known historical artifact, and people will recognize it.', 'It was made by a wizard who was terrible at naming things.'
+    'It hums when near gold.', 'It feels slimy to the touch.', 'It casts no shadow.', 'It whispers secrets to the wearer in their sleep.', 'It is always cold, even in fire.',
+    'It attracts moths.', 'It makes a faint ringing sound when dropped.', 'It seems to be watching you.', 'It changes weight randomly.', 'It tastes like strawberries.'
 ];
-export const GENERATOR_DUNGEON_TYPES: ReadonlyArray<string> = ['Tomb', 'Mine', 'Library', 'Sewer', 'Temple', 'Fortress', 'Lair', 'Prison', 'Wizard\'s Tower', 'Monastery', 'Catacombs', 'Academy', 'Manor', 'Observatory', 'Asylum', 'Menagerie', 'Cistern', 'Vault', 'Sanctuary'];
-export const GENERATOR_DUNGEON_PREFIXES: ReadonlyArray<string> = ['The Sunken', 'The Forgotten', 'The Cursed', 'The Crystal', 'The Clockwork', 'The Infernal', 'The Astral', 'The Shifting', 'The Howling', 'The Silent', 'The Gilded', 'The Shadowy', 'The Whispering', 'The Endless', 'The Prismatic'];
+
+// --- DUNGEON GENERATOR ---
+export const GENERATOR_DUNGEON_TYPES: ReadonlyArray<string> = ['Tomb', 'Mine', 'Library', 'Sewer', 'Temple', 'Fortress', 'Lair', 'Prison', 'Wizard\'s Tower', 'Monastery', 'Catacombs', 'Academy', 'Manor', 'Observatory', 'Asylum', 'Menagerie', 'Cistern', 'Vault', 'Sanctuary', 'Crypt', 'Dungeon', 'Cavern', 'Ruins', 'Outpost', 'Stronghold', 'Citadel', 'Palace', 'Shrine', 'Laboratory', 'Workshop'];
+export const GENERATOR_DUNGEON_PREFIXES: ReadonlyArray<string> = ['The Sunken', 'The Forgotten', 'The Cursed', 'The Crystal', 'The Clockwork', 'The Infernal', 'The Astral', 'The Shifting', 'The Howling', 'The Silent', 'The Gilded', 'The Shadowy', 'The Whispering', 'The Endless', 'The Prismatic', 'The Ancient', 'The Lost', 'The Hidden', 'The Forbidden', 'The Sacred', 'The Profane', 'The Dark', 'The Light', 'The Frozen', 'The Burning', 'The Floating', 'The Flying', 'The Invisible', 'The Eternal', 'The Temporal'];
 export const GENERATOR_DUNGEON_INHABITANTS: ReadonlyArray<string> = [
     'a clan of goblins', 'restless undead spirits', 'a coven of hags', 'a cult of a forgotten lord', 'clockwork automatons', 'a colony of myconids', 'a tribe of kobolds with elaborate traps', 'a nest of giant spiders', 'a group of duergar slavers', 'oozes and slimes',
-    'a thieves\' guild', 'a society of ghouls', 'elementals bound to the location', 'a magical beast and its offspring', 'a small community of deep gnomes', 'a circle of mad druids', 'a displaced clan of orcs', 'a band of desperate outlaws', 'a colony of territorial bats', 'a family of territorial trolls'
+    'a dragon and its minions', 'a band of bandits', 'a swarm of rats', 'a pack of gnolls', 'a tribe of lizardfolk',
+    'a colony of mind flayers', 'a beholder and its slaves', 'a group of elementals', 'a demonic incursion', 'a celestial guard'
 ];
 export const GENERATOR_DUNGEON_HAZARDS: ReadonlyArray<string> = [
     'an area of magical darkness', 'rising and falling water levels', 'pockets of poisonous gas', 'shifting walls that create a labyrinth', 'a wild magic zone', 'extreme heat or cold', 'fragile, crumbling floors', 'an ancient, sentient magical trap', 'an illusion that masks the true nature of the area', 'a powerful curse that affects all intruders',
-    'areas of antimagic', 'a magical plague', 'a temporal distortion', 'a series of complex riddles', 'a series of deadly traps', 'a series of moral quandaries', 'a powerful, benevolent guardian', 'a rival adventuring party', 'a collapsing ceiling', 'a powerful, malevolent spirit'
+    'pits filled with spikes', 'swinging blades', 'falling rocks', 'flooded chambers', 'magical wards',
+    'teleportation traps', 'monsters in stasis', 'anti-magic fields', 'gravity reversal zones', 'hallucinogenic spores'
 ];
 export const GENERATOR_DUNGEON_GOALS: ReadonlyArray<string> = [
     'defeat the powerful Lich who protects its phylactery', 'slay the territorial Dragon guarding its hoard', 'disrupt the Mind Flayer\'s plan to start a new colony', 'stop the Hag Coven from completing their dark ritual', 'find a legendary lost artifact',
     'rescue an important prisoner', 'consecrate a desecrated altar', 'close a portal to another plane', 'retrieve a book of forbidden knowledge', 'destroy the heart of a corrupting magical influence',
-    'assassinate the leader of the cult', 'steal the treasure map from the goblin chief', 'activate an ancient magical device', 'discover the source of the undead infestation', 'survive a trial set by the dungeon\'s creator',
-    'find a safe passage through the dungeon', 'map the entire dungeon', 'find the lost heir to a kingdom', 'find a cure for a magical disease', 'find a way to communicate with the dungeon\'s inhabitants'
+    'map the unexplored depths', 'find a cure for a plague', 'negotiate a peace treaty', 'escort a VIP', 'survive the night',
+    'find the exit', 'recover a lost soul', 'prove one\'s worth', 'solve an ancient riddle', 'prevent a catastrophe'
 ];
-export const GENERATOR_NAME_ELF_PREFIX: ReadonlyArray<string> = ['Ael', 'Aen', 'Aer', 'Alae', 'El', 'Elen', 'Fae', 'Fen', 'Gal', 'Gil', 'Lau', 'Lora', 'Mal', 'Nae', 'Nym', 'Rae', 'Ria', 'Sil', 'Sola', 'Tae', 'Val', 'Ara', 'Bryn', 'Cael', 'Dae', 'Eil', 'Fara', 'Glyn', 'Hae', 'Ith', 'Jael', 'Lael', 'Mael', 'Nael', 'Olen', 'Pae', 'Rael', 'Sael', 'Tael', 'Uel', 'Vael', 'Wren', 'Xil', 'Yel', 'Zae'];
-export const GENERATOR_NAME_ELF_SUFFIX: ReadonlyArray<string> = ['ael', 'anor', 'dal', 'driel', 'en', 'eon', 'ia', 'ian', 'iel', 'il', 'ion', 'is', 'leth', 'lian', 'lyn', 'na', 'nor', 'orin', 'rian', 'thas', 'wyn', 'ara', 'as', 'bir', 'cis', 'dor', 'eir', 'fir', 'ion', 'lys', 'mar', 'nis', 'on', 'phor', 'quis', 'sys', 'tor', 'us', 'vor', 'xis', 'ya', 'zor'];
-export const GENERATOR_NAME_DWARF_PREFIX: ReadonlyArray<string> = ['Bal', 'Bar', 'Bor', 'Brom', 'Dur', 'Dwal', 'Fim', 'Gim', 'Gloin', 'Gor', 'Har', 'Kil', 'Mor', 'Nor', 'Or', 'Ov', 'Thar', 'Thor', 'Tor', 'Ulf', 'Von', 'An', 'Bel', 'Dal', 'Eb', 'Farg', 'Gral', 'Hek', 'Jot', 'Kar', 'Lod', 'Magn', 'Nal', 'Ol', 'Pik', 'Rur', 'Snor', 'Tav', 'Ur', 'Vol', 'Wer', 'Yor', 'Zor'];
-export const GENERATOR_NAME_DWARF_SUFFIX: ReadonlyArray<string> = ['ain', 'an', 'ar', 'bek', 'dahr', 'din', 'dur', 'gar', 'grim', 'in', 'li', 'lin', 'nir', 'or', 'rak', 'rin', 'son', 'stout', 'sun', 'thane', 'tor', 'ack', 'bellow', 'crag', 'dottir', 'fist', 'gran', 'hild', 'jorn', 'krag', 'lund', 'main', 'nock', 'oak', 'pick', 'quarry', 'rum', 'stone', 'tunn', 'under', 'vein', 'worn', 'yorn', 'zen'];
-export const GENERATOR_NAME_ORC_PREFIX: ReadonlyArray<string> = ['Az', 'Bog', 'Daz', 'Ghor', 'Gna', 'Grol', 'Grul', 'Hok', 'Kro', 'Lug', 'Mog', 'Naz', 'Ogh', 'Ruk', 'Shag', 'Snag', 'Thok', 'Urg', 'Var', 'Yaz', 'Zog', 'Barg', 'Dorg', 'Gash', 'Hulg', 'Jarg', 'Karg', 'Lurtz', 'Muz', 'Narg', 'Orag', 'Puk', 'Rath', 'Skar', 'Tusk', 'Ugl', 'Varg', 'Warg', 'Yag', 'Zarg'];
-export const GENERATOR_NAME_ORC_SUFFIX: ReadonlyArray<string> = ['ak', 'gash', 'gor', 'grum', 'klob', 'mak', 'mog', 'nar', 'rag', 'rok', 'shag', 'snaga', 'thak', 'thok', 'tusk', 'uk', 'ur', 'uz', 'zgul', 'zod', 'bash', 'crusher', 'doom', 'fang', 'fist', 'gut', 'hand', 'head', 'jaw', 'kill', 'mash', 'rend', 'ripper', 'smash', 'snout', 'spike', 'splitter', 'stomp', 'smasher', 'breaker'];
+
+// --- CITY/SETTLEMENT NAMES ---
+export const GENERATOR_CITY_PREFIX: ReadonlyArray<string> = [
+    'Iron', 'Green', 'North', 'South', 'East', 'West', 'High', 'Low', 'Deep', 'Black', 'White', 'Red', 'Blue', 'Gold', 'Silver',
+    'River', 'Lake', 'Sea', 'Ocean', 'Mountain', 'Hill', 'Valley', 'Forest', 'Wood', 'Field', 'Meadow', 'Swamp', 'Marsh', 'Desert', 'Sand',
+    'Rock', 'Stone', 'Oak', 'Pine', 'Ash', 'Elm', 'Thorn', 'Rose', 'Lily', 'Sun', 'Moon', 'Star', 'Wind', 'Rain', 'Storm',
+    'King', 'Queen', 'Prince', 'Princess', 'Lord', 'Lady', 'Knight', 'Wizard', 'Dragon', 'Giant', 'Elf', 'Dwarf', 'Orc', 'Goblin',
+    'New', 'Old', 'Great', 'Little', 'Upper', 'Lower', 'Inner', 'Outer', 'Middle', 'Twin', 'Three', 'Four', 'Five', 'Seven', 'Nine',
+    'Bright', 'Dark', 'Cold', 'Warm', 'Swift', 'Slow', 'Silent', 'Loud', 'Wild', 'Tame', 'Free', 'Bound', 'Lost', 'Found', 'Broken'
+];
+export const GENERATOR_CITY_SUFFIX: ReadonlyArray<string> = [
+    'ton', 'town', 'ville', 'burg', 'burgh', 'city', 'port', 'harbor', 'haven', 'bay', 'beach', 'coast', 'side', 'view', 'point',
+    'ford', 'bridge', 'crossing', 'mouth', 'source', 'spring', 'well', 'fall', 'falls', 'lake', 'pool', 'mere', 'water', 'stream', 'brook',
+    'hill', 'mount', 'peak', 'ridge', 'cliff', 'rock', 'stone', 'field', 'meadow', 'plain', 'valley', 'dale', 'glen', 'wood', 'forest',
+    'grove', 'thicket', 'gate', 'wall', 'keep', 'fort', 'hold', 'guard', 'watch', 'tower', 'spire', 'castle', 'palace', 'manor', 'hall',
+    'market', 'trade', 'fair', 'cross', 'road', 'way', 'path', 'track', 'trail', 'lane', 'street', 'alley', 'square', 'plaza', 'circle',
+    'land', 'earth', 'world', 'home', 'house', 'stead', 'farm', 'field', 'garden', 'park', 'yard', 'court', 'ground', 'place', 'spot'
+];
+
+// --- TREASURE GENERATOR ---
+export const GENERATOR_TREASURE_COINS: ReadonlyArray<string> = [
+    'a handful of copper pieces', 'a pouch of silver coins', 'a chest of gold dragons', 'a single platinum coin', 'ancient, square coins with holes in the center',
+    'coins stamped with the face of a forgotten emperor', 'foreign currency made of seashells', 'heavy iron trade bars', 'gemstones used as currency', 'electrum pieces',
+    'coins made of bone', 'coins that are warm to the touch', 'coins that hum when held', 'coins that glow in the dark', 'coins that are magnetic'
+];
+export const GENERATOR_TREASURE_ART: ReadonlyArray<string> = [
+    'a silver chalice set with moonstones', 'a gold-framed painting of a noble', 'a silk tapestry depicting a famous battle', 'a carved ivory statuette of a dragon', 'a brass mug with dwarven runes',
+    'a porcelain mask', 'a set of crystal goblets', 'a velvet doublet with gold embroidery', 'a ceremonial dagger with a jeweled hilt', 'a heavy gold signet ring',
+    'a statuette of a god', 'a jeweled comb', 'a silver mirror', 'a gold locket', 'a fine leather belt',
+    'a silk scarf', 'a velvet cloak', 'a fur coat', 'a pair of embroidered gloves', 'a silver flute'
+];
+export const GENERATOR_TREASURE_GEMS: ReadonlyArray<string> = [
+    'a flawless diamond', 'a handful of rubies', 'a large, uncut emerald', 'a pouch of sapphires', 'a black opal',
+    'a tiger eye gem', 'a piece of amber with an insect inside', 'a geode split to reveal purple crystals', 'a pearl the size of a grape', 'a bloodstone',
+    'an amethyst', 'a garnet', 'a topaz', 'a turquoise', 'a jade',
+    'a lapis lazuli', 'a malachite', 'a moonstone', 'a sunstone', 'a zircon'
+];
+
+// --- RUMOR GENERATOR ---
+export const GENERATOR_RUMOR_SUBJECTS: ReadonlyArray<string> = [
+    'the local lord', 'the old wizard in the tower', 'the strange lights in the swamp', 'the missing children', 'the new captain of the guard',
+    'the merchant caravan that just arrived', 'the ruins on the hill', 'the beast in the woods', 'the upcoming festival', 'the price of grain',
+    'the strange traveler', 'the cursed artifact', 'the haunted house', 'the secret society', 'the ancient prophecy',
+    'the king\'s illness', 'the queen\'s secret', 'the prince\'s disappearance', 'the princess\'s wedding', 'the war on the border'
+];
+export const GENERATOR_RUMOR_VERBS: ReadonlyArray<string> = [
+    'is actually a doppelganger', 'has made a pact with a demon', 'is hiding a great treasure', 'was seen performing a dark ritual', 'is suffering from a curse',
+    'is planning a rebellion', 'has been replaced by an imposter', 'is secretly a dragon', 'died years ago and is now a ghost', 'knows the location of a lost city',
+    'is looking for adventurers', 'is offering a reward', 'is in league with bandits', 'is a spy for the enemy', 'is a vampire',
+    'is a werewolf', 'is a lich', 'is a god in disguise', 'is a time traveler', 'is a demon lord'
+];
+export const GENERATOR_RUMOR_LOCATIONS: ReadonlyArray<string> = [
+    'in the sewers', 'in the catacombs beneath the temple', 'in the attic of the inn', 'in the deep forest', 'on the other side of the mountain',
+    'in the noble\'s estate', 'in the old graveyard', 'at the docks at midnight', 'in the abandoned mine', 'in the magical university',
+    'in the king\'s chambers', 'in the queen\'s garden', 'in the prince\'s tower', 'in the princess\'s boudoir', 'in the war room',
+    'in the tavern cellar', 'in the town square', 'in the marketplace', 'in the guild hall', 'in the church'
+];
+
+// --- COMPLEX NAME GENERATOR DATA ---
+export const GENERATOR_NAME_DATA = {
+    Elf: {
+        prefixes: ['Ael', 'Aen', 'Aer', 'Alae', 'El', 'Elen', 'Fae', 'Fen', 'Gal', 'Gil', 'Lau', 'Lora', 'Mal', 'Nae', 'Nym', 'Rae', 'Ria', 'Sil', 'Sola', 'Tae', 'Val', 'Ara', 'Bryn', 'Cael', 'Dae', 'Eil', 'Fara', 'Glyn', 'Hae', 'Ith', 'Jael', 'Lael', 'Mael', 'Nael', 'Olen', 'Pae', 'Rael', 'Sael', 'Tael', 'Uel', 'Vael', 'Wren', 'Xil', 'Yel', 'Zae', 'Cym', 'Dyl', 'Eir', 'Fael', 'Gaer', 'Hyl', 'Ilan', 'Kael', 'Lian', 'Myr', 'Nyth', 'Oryl', 'Pyll', 'Quil', 'Ryl', 'Syl', 'Tyl', 'Vyl', 'Wyn', 'Xyr', 'Yll', 'Zyl'],
+        suffixes: ['ael', 'anor', 'dal', 'driel', 'en', 'eon', 'ia', 'ian', 'iel', 'il', 'ion', 'is', 'leth', 'lian', 'lyn', 'na', 'nor', 'orin', 'rian', 'thas', 'wyn', 'ara', 'as', 'bir', 'cis', 'dor', 'eir', 'fir', 'ion', 'lys', 'mar', 'nis', 'on', 'phor', 'quis', 'sys', 'tor', 'us', 'vor', 'xis', 'ya', 'zor', 'a', 'ae', 'ai', 'ao', 'au', 'ea', 'ee', 'ei', 'eo', 'eu', 'ia', 'ie', 'ii', 'io', 'iu', 'oa', 'oe', 'oi', 'oo', 'ou', 'ua', 'ue', 'ui', 'uo', 'uu'],
+        surnames: ['Amastacia', 'Amakiir', 'Galanodel', 'Holimion', 'Liadon', 'Meliamne', 'Naïlo', 'Siannodel', 'Ilphelkiir', 'Xiloscient', 'Astorio', 'Caerdonel', 'Erevan', 'Faeranduil', 'Gildea', 'Hylia', 'Iathrana', 'Kethryllia', 'Lathalas', 'Myrrin']
+    },
+    Dwarf: {
+        prefixes: ['Bal', 'Bar', 'Bor', 'Brom', 'Dur', 'Dwal', 'Fim', 'Gim', 'Gloin', 'Gor', 'Har', 'Kil', 'Mor', 'Nor', 'Or', 'Ov', 'Thar', 'Thor', 'Tor', 'Ulf', 'Von', 'An', 'Bel', 'Dal', 'Eb', 'Farg', 'Gral', 'Hek', 'Jot', 'Kar', 'Lod', 'Magn', 'Nal', 'Ol', 'Pik', 'Rur', 'Snor', 'Tav', 'Ur', 'Vol', 'Wer', 'Yor', 'Zor', 'Ad', 'Ba', 'Bro', 'Bru', 'Dain', 'Dar', 'Del', 'Dol', 'Dor', 'Dw', 'Far', 'Fun', 'Gil', 'Gim', 'Glo', 'Gom', 'Gorm', 'Grum', 'Grun', 'Hag', 'Han', 'Har', 'Hel', 'Hof', 'Hold', 'Hon', 'Hul', 'Hur'],
+        suffixes: ['ain', 'an', 'ar', 'bek', 'dahr', 'din', 'dur', 'gar', 'grim', 'in', 'li', 'lin', 'nir', 'or', 'rak', 'rin', 'son', 'stout', 'sun', 'thane', 'tor', 'ack', 'bellow', 'crag', 'dottir', 'fist', 'gran', 'hild', 'jorn', 'krag', 'lund', 'main', 'nock', 'oak', 'pick', 'quarry', 'rum', 'stone', 'tunn', 'under', 'vein', 'worn', 'yorn', 'zen', 'bad', 'bar', 'bor', 'brak', 'brek', 'dahr', 'dain', 'dal', 'din', 'el', 'en', 'end', 'er', 'et', 'fur', 'gal', 'gan', 'gat', 'gorn', 'grim', 'grum', 'gund', 'gut'],
+        clanNames: ['Battlehammer', 'Blackaxe', 'Bouldershoulder', 'Dankil', 'Fireforge', 'Frostbeard', 'Gorunn', 'Holderhek', 'Ironfist', 'Loderr', 'Lutgehr', 'Rumnaheim', 'Strakeln', 'Torunn', 'Ungart', 'Deepdelver', 'Goldfinder', 'Hammerstrike', 'Oakenhield', 'Silveraxe']
+    },
+    Orc: {
+        prefixes: ['Az', 'Bog', 'Daz', 'Ghor', 'Gna', 'Grol', 'Grul', 'Hok', 'Kro', 'Lug', 'Mog', 'Naz', 'Ogh', 'Ruk', 'Shag', 'Snag', 'Thok', 'Urg', 'Var', 'Yaz', 'Zog', 'Barg', 'Dorg', 'Gash', 'Hulg', 'Jarg', 'Karg', 'Lurtz', 'Muz', 'Narg', 'Orag', 'Puk', 'Rath', 'Skar', 'Tusk', 'Ugl', 'Varg', 'Warg', 'Yag', 'Zarg', 'Ag', 'Bag', 'Bug', 'Dag', 'Drug', 'Gag', 'Gog', 'Gug', 'Hag', 'Hug', 'Jag', 'Jog', 'Jug', 'Kag', 'Kog', 'Kug', 'Lag', 'Log', 'Lug', 'Mag', 'Mog', 'Mug', 'Nag', 'Nog', 'Nug'],
+        suffixes: ['ak', 'gash', 'gor', 'grum', 'klob', 'mak', 'mog', 'nar', 'rag', 'rok', 'shag', 'snaga', 'thak', 'thok', 'tusk', 'uk', 'ur', 'uz', 'zgul', 'zod', 'bash', 'crusher', 'doom', 'fang', 'fist', 'gut', 'hand', 'head', 'jaw', 'kill', 'mash', 'rend', 'ripper', 'smash', 'snout', 'spike', 'splitter', 'stomp', 'smasher', 'breaker', 'ar', 'or', 'ur', 'yr', 'ag', 'eg', 'ig', 'og', 'ug', 'al', 'el', 'il', 'ol', 'ul', 'am', 'em', 'im', 'om', 'um', 'an', 'en', 'in', 'on', 'un'],
+        epithets: ['the Destroyer', 'Bone-Crusher', 'Skull-Splitter', 'the Vile', 'Blood-Drinker', 'the Mighty', 'One-Eye', 'Iron-Hide', 'Face-Eater', 'Soul-Stealer', 'Doom-Bringer', 'Fear-Monger', 'Hate-Breeder', 'War-Maker', 'Death-Dealer']
+    },
+    Human: {
+        firstNames: [
+            'Ander', 'Blath', 'Bran', 'Frath', 'Geth', 'Lander', 'Luth', 'Malcer', 'Stor', 'Taman', 'Urth',
+            'Amafrey', 'Beth', 'Cefrey', 'Kethra', 'Mara', 'Olga', 'Silifrey', 'Westra',
+            'Borivik', 'Faurgar', 'Jandar', 'Kanithar', 'Madislak', 'Ralmevik', 'Shaumar', 'Vladislak',
+            'Fyevarra', 'Hulmarra', 'Immith', 'Imzel', 'Navarra', 'Shevarra', 'Tammith', 'Yuldra',
+            'Aseir', 'Bardeid', 'Haseid', 'Khemed', 'Mehmen', 'Sudeiman', 'Zasheir',
+            'Atala', 'Ceidil', 'Hama', 'Jasmal', 'Meilil', 'Seipora', 'Yasheira', 'Zasheida',
+            'Darvin', 'Dorn', 'Evendur', 'Gorstag', 'Grim', 'Helm', 'Malark', 'Morn', 'Randal', 'Stedd',
+            'Arveene', 'Esvele', 'Jhessail', 'Kerri', 'Lureene', 'Miri', 'Rowan', 'Shandri', 'Tessele',
+            'Chao', 'Chen', 'Fa', 'Jiang', 'Jun', 'Lian', 'Long', 'Meng', 'On', 'Shan', 'Shui', 'Wen',
+            'Bai', 'Chao', 'Jia', 'Lei', 'Mei', 'Qiao', 'Shui', 'Tai',
+            'Anton', 'Diero', 'Marcon', 'Pieron', 'Rimardo', 'Romero', 'Salazar', 'Umbero',
+            'Balama', 'Dona', 'Faila', 'Jalana', 'Luisa', 'Marta', 'Quara', 'Selise', 'Vonda',
+            'Arthur', 'Benedict', 'Charles', 'David', 'Edward', 'Frederick', 'George', 'Henry', 'Isaac', 'James',
+            'Alice', 'Beatrice', 'Catherine', 'Dorothy', 'Eleanor', 'Florence', 'Grace', 'Hannah', 'Isabella', 'Jane'
+        ],
+        surnames: [
+            'Brightwood', 'Helder', 'Hornraven', 'Lackman', 'Stormwind', 'Windrivver',
+            'Chergoba', 'Dyernina', 'Iltazyara', 'Murnyethara', 'Stayanoga', 'Ulmokina',
+            'Basha', 'Dumein', 'Jassan', 'Khalid', 'Mostana', 'Pashar', 'Rein',
+            'Amblecrown', 'Buckman', 'Dundragon', 'Evenwood', 'Greycastle', 'Tallstag',
+            'An', 'Chen', 'Chi', 'Fai', 'Huang', 'Kuang', 'Lai', 'Lin', 'Mai', 'Pin', 'Shin', 'Tan', 'Wan',
+            'Agosto', 'Astorio', 'Calabra', 'Domine', 'Falone', 'Marivaldi', 'Pisacar', 'Ramondo',
+            'Smith', 'Jones', 'Williams', 'Brown', 'Davis', 'Miller', 'Wilson', 'Moore', 'Taylor', 'Anderson'
+        ]
+    },
+    Halfling: {
+        firstNames: ['Alton', 'Ander', 'Cade', 'Corrin', 'Eldon', 'Errich', 'Finnan', 'Garret', 'Lindal', 'Lyle', 'Merric', 'Milo', 'Osborn', 'Perrin', 'Reed', 'Roscoe', 'Wellby', 'Andry', 'Bree', 'Callie', 'Cora', 'Euphemia', 'Jillian', 'Kithri', 'Lavinia', 'Lidda', 'Merla', 'Nedda', 'Paela', 'Portia', 'Seraphina', 'Shaena', 'Trym', 'Vani', 'Verna'],
+        surnames: ['Brushgather', 'Goodbarrel', 'Greenbottle', 'High-hill', 'Hilltopple', 'Leagallow', 'Tealeaf', 'Thorngage', 'Tosscobble', 'Underbough', 'Applebloom', 'Berrybush', 'Bramblefoot', 'Cherrycheeks', 'Daisyfield', 'Elderberry', 'Fernwood', 'Gillyweed', 'Hazelnut', 'Ivy']
+    },
+    Gnome: {
+        firstNames: ['Boddynock', 'Dimble', 'Fonkin', 'Gimble', 'Glim', 'Gerbo', 'Jebeddo', 'Namfoodle', 'Roondar', 'Seebo', 'Zook', 'Bimpnottin', 'Breena', 'Caramip', 'Carlin', 'Donella', 'Duvamil', 'Ella', 'Ellyjobell', 'Ellywick', 'Lilli', 'Loopmottin', 'Lorilla', 'Mardnab', 'Nissa', 'Nyx', 'Oda', 'Orla', 'Roywyn', 'Shamil', 'Tana', 'Waywocket', 'Zanna'],
+        clanNames: ['Beren', 'Daergel', 'Folkor', 'Garrick', 'Nackle', 'Murnig', 'Ningel', 'Raulnor', 'Scheppen', 'Timbers', 'Turen', 'Badger', 'Cloak', 'Doublelock', 'Filchbatter', 'Fnipper', 'Ku', 'Nim', 'Oneshoe', 'Pock', 'Sparklegem'],
+        nicknames: ['Badger', 'Cloak', 'Doublelock', 'Filchbatter', 'Fnipper', 'Ku', 'Nim', 'Oneshoe', 'Pock', 'Sparklegem', 'Stumbleduck', 'Giggles', 'Sneaky', 'Tinker', 'Wobbly', 'Zippy', 'Blinky', 'Clank', 'Fizzle', 'Pop']
+    },
+    Tiefling: {
+        infernalNames: ['Akmenos', 'Amnon', 'Barakas', 'Damakos', 'Ekemon', 'Iados', 'Kairon', 'Leucis', 'Melech', 'Mordai', 'Morthos', 'Pelaios', 'Skamos', 'Therai', 'Akta', 'Anakis', 'Bryseis', 'Criella', 'Damaia', 'Ea', 'Kallista', 'Lerissa', 'Makaria', 'Nemeia', 'Orianna', 'Phelaia', 'Rieta'],
+        virtueNames: ['Art', 'Carrion', 'Chant', 'Creed', 'Despair', 'Excellence', 'Fear', 'Glory', 'Hope', 'Ideal', 'Music', 'Nowhere', 'Open', 'Poetry', 'Quest', 'Random', 'Reverence', 'Sorrow', 'Temerity', 'Torment', 'Weary', 'Ambition', 'Chance', 'Courage', 'Death', 'Fate', 'Grace', 'Hate', 'Honor', 'Joy', 'Life', 'Love', 'Luck', 'Pain', 'Passion', 'Patience', 'Peace', 'Power', 'Pride', 'Reason', 'Silence', 'Truth', 'Valor', 'Vengeance', 'Victory', 'War', 'Wisdom', 'Wrath']
+    },
+    Dragonborn: {
+        firstNames: ['Arjhan', 'Balasar', 'Bharash', 'Donaar', 'Ghesh', 'Heskan', 'Kriv', 'Medrash', 'Mehen', 'Nadarr', 'Pandjed', 'Patrin', 'Rhogar', 'Shamash', 'Shedinn', 'Tarhun', 'Torinn', 'Akra', 'Biri', 'Daar', 'Farideh', 'Harann', 'Havilar', 'Jheri', 'Kava', 'Korinn', 'Mishann', 'Nala', 'Perra', 'Raiann', 'Sora', 'Surina', 'Thava', 'Uadjit'],
+        clanNames: ['Clethtinthiallor', 'Daardendrian', 'Delmirev', 'Drachedandion', 'Fenkenkabradon', 'Kepeshkmolik', 'Kerrhylon', 'Kimbatuul', 'Linxakasendalor', 'Myastan', 'Nemmonis', 'Norixius', 'Ophinshtalajiir', 'Prexijandilin', 'Shestendeliath', 'Turnuroth', 'Verthisathurgiesh', 'Yarjerit', 'Argenthrixus', 'Bahamut', 'Bladewing', 'Brightscale', 'Bronzehammer', 'Darkscale', 'Drakefire', 'Emberclaw', 'Flamebreath', 'Goldcrest', 'Greenleaf', 'Ironscale', 'Nightwing', 'Redscale', 'Silverwing', 'Stormborn', 'Sunscale', 'Thunderclaw', 'Venomspit', 'Whitefang']
+    }
+};
+
+// Deprecated arrays kept for backward compatibility if needed, but not used in new generator logic
+export const GENERATOR_NAME_ELF_PREFIX = GENERATOR_NAME_DATA.Elf.prefixes;
+export const GENERATOR_NAME_ELF_SUFFIX = GENERATOR_NAME_DATA.Elf.suffixes;
+export const GENERATOR_NAME_DWARF_PREFIX = GENERATOR_NAME_DATA.Dwarf.prefixes;
+export const GENERATOR_NAME_DWARF_SUFFIX = GENERATOR_NAME_DATA.Dwarf.suffixes;
+export const GENERATOR_NAME_ORC_PREFIX = GENERATOR_NAME_DATA.Orc.prefixes;
+export const GENERATOR_NAME_ORC_SUFFIX = GENERATOR_NAME_DATA.Orc.suffixes;
