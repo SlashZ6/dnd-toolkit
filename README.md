@@ -5,7 +5,7 @@ hi.. this is a little website i made using Google gemini to help me and my frien
 Please add a star to this repo, so more people see it! Thank you!
 
 you can check it out here:
-### https://dndtoolkit630.netlify.app/
+### https://dndtoolkit.netlify.app/
 
 If you have any issues or have suggestions, there is a feedback button on the corner of the login screen, i'd like to hear a lot from you!
 
