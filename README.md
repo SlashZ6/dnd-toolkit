@@ -12,7 +12,7 @@ If you have any issues or have suggestions, there is a feedback button on the co
 # Access:
 Also if you want the access codes, you can message me in discord or instagram, you can find a link at the bottom of the login screen, then you have my socials there. (do not send from the feedback, because i can't contact you there)
 
-I am doing this because i wanna know how many people will be willing to use this toolkit, i get happy when i know someone will use it, and don't worry, it's completely free and i don't want anything from you!
+I am doing this because i wanna know how many people will be willing to use this toolkit, i get happy when i know someone will use it, and don't worry, it's completely free and i don't want anything from you!   And by the way, the app does detect some info of the device and region, it's not like i am trying to hack or something~, it's just because i wanna know, so no worries please!
 
 # Features:
 
