@@ -10,39 +10,39 @@ you can check it out here:
 If you have any issues or have suggestions, there is a feedback button on the corner of the login screen, i'd like to hear a lot from you!
 
 # Access:
-Also if you want the access codes, you can message me in discord or instagram, you can find a link at the bottom of the login screen, then you have my socials there. (do not send from the feedback, because i can't contact you there)
+For players, write: dnd.player    For DMs: dnd.secretcode
 
-I am doing this because i wanna know how many people will be willing to use this toolkit, i get happy when i know someone will use it, and don't worry, it's completely free and i don't want anything from you!   And by the way, the app does detect some info of the device and region, it's not like i am trying to hack or something~, it's just because i wanna know, so no worries please!
+
+And by the way, the app does detect some info of the device and region, it's not like i am trying to hack or something~, it's just because i wanna know, so no worries please! I am doing this because i wanna know how many people will be willing to use this toolkit, i get happy when i know someone will use it, and don't worry, it's completely free and i don't want anything from you! 
+
 
 # Features:
 
 * **Core Tech & UI:**
-    * Works offline + direct P2P.
-    * Easy Room Codes.
-    * Moving themes & VFX.
+    * direct P2P.
+    * Room Codes.
+    * Animated themes.
     * Fast on phone or PC.
 
 * **Character Management:**
-    * Easy builder with photos.
+    * Easy builder.
     * Auto-math for all stats.
-    * Track health, spells, & weight.
-    * "Equip" buttons for gear.
-    * Custom family crest maker.
+    * Track health, spells, & Inventory.
+    * Custom crest maker (for P2P).
     * Export/Import characters.
 
 * **Dungeon Master Tools:**
-    * Drag & drop window layout.
+    * Dashboard for organized session.
     * Fast dice & math counters.
-    * NPC & Monster creators.
-    * Secret notes & world logs.
-    * Custom calendar & weather.
-    * Random name generator.
+    * NPC & Beasts creation.
+    * Categorized Notes.
+    * calendar.
+    * Random generators.
     * Full database backups.
 
 * **Combat & World Map:**
     * Move tokens on a map.
     * Turn-order tracker.
-    * Ruler & grid-snap tools.
     * Draw walls & map shapes.
     * Animated weather effects.
 
