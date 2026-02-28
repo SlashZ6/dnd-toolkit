@@ -19,20 +19,20 @@ And by the way, the app does detect some info of the device and region, it's not
 
 # Features:
 
-* **Core Tech & UI:**
+* **Core & UI:**
     * direct P2P.
     * Room Codes.
     * Animated themes.
     * Fast on phone or PC.
 
-* **Character Management:**
+* **Players toolkit:**
     * Easy builder.
     * Auto-math for all stats.
     * Track health, spells, & Inventory.
     * Custom crest maker (for P2P).
     * Export/Import characters.
 
-* **Dungeon Master Tools:**
+* **DM toolkit:**
     * Dashboard for organized session.
     * Fast dice & math counters.
     * NPC & Beasts creation.
@@ -40,9 +40,7 @@ And by the way, the app does detect some info of the device and region, it's not
     * calendar.
     * Random generators.
     * Full database backups.
-
-* **Combat & World Map:**
-    * Move tokens on a map.
+    * Movable tokens on a map.
     * Turn-order tracker.
     * Draw walls & map shapes.
     * Animated weather effects.
